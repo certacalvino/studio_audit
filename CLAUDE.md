@@ -11,7 +11,7 @@ Track decisions, findings, and deliverable progress across audit sessions.
 ## Status
 - [x] A. Current State Map  (`A_current_state_map.md`, verified against live screenshots)
 - [x] B. Competitive Benchmark Summary  (`B_competitive_benchmark.md`, 7 competitors +Figma/Webflow/Notion; + B2 AI-integration-patterns table: 6 AI products, recommends on-demand context-bound side-sheet over permanent rail)
-- [ ] C. Prioritized Issue List (20+ issues)  — SKIPPED this session per user request (open for next session)
+- [x] C. Prioritized Issue List (`C_issue_list.md`, 30 issues S-01–S-30, prioritized by severity→effort; 12 quick wins flagged)
 - [x] D. Navigation Redesign Proposal  (`D_navigation_redesign.md`, 3 directions + Dir 0 synthesis)
 - [x] E. Dashboard Redesign  (`E_dashboard_redesign.md`) — user redefined E from "Top 3 Quick Wins" to a home/dashboard redesign
 - [x] F. Wireframe Briefs  (`F_wireframe_briefs.md`, Direction 0 recommended + Directions 1-3, designer-ready zone boxes)
