@@ -96,4 +96,58 @@ open objects at once**, **context persistence**, and **branching/versioning**.
 
 **Updated headline:** across all seven, Studio (3.0) still sits mid-pack — above Webflow (2.6), near Notion (3.6) and Retool (3.2), below the nav/versioning leaders (GitHub 4.4, Cursor 4.2, Linear 4.0, Figma 3.8). The pattern is unchanged: **strong branching/AI engine, weak navigation shell.** Figma (visual diff) and Notion (side-peek + breadcrumbs) sharpen the prescription already in Section D.
 
+---
+
+# B2. AI Integration Patterns — focused benchmark
+
+A second benchmark scoped to **how AI is embedded in the product surface**, since Studio's AI rail is
+both a strength (agentic, context-aware) and a liability (squats on the prime nav region, undiscoverable
+Plan mode). Products: Claude.ai web · Claude Code · ChatGPT · Cursor · Atlas Browser · Notion AI.
+
+Scale **1–5** (5 = best fit for a configuration tool where the user is always inside one object).
+Column rubric:
+- **AI panel placement** — how well-placed the AI surface is for focused work (5 = adjacent to the object, non-intrusive).
+- **Context awareness** — does it know what you're looking at *without being told*? (5 = auto-binds to the current object/selection).
+- **Always-visible vs on-demand** — fit of the visibility model (5 = instantly reachable yet not occupying permanent real estate).
+- **Canvas/editor integration** — can it read and *act on* the thing you're editing inline? (5 = inline edits + diffs in the editor).
+- **Relevance to Studio** — how transferable the pattern is to Studio's object-bound workflow.
+
+## Score matrix
+
+| Product | AI panel placement | Context awareness | Always-vis vs on-demand | Canvas/editor integration | Relevance to Studio | Avg |
+|---|:--:|:--:|:--:|:--:|:--:|:--:|
+| **Claude.ai web** | 3 | 2 | 3 | 3 | 2 | **2.6** |
+| **Claude Code** | 4 | 5 | 4 | 5 | 5 | **4.6** |
+| **ChatGPT** | 3 | 2 | 3 | 3 | 2 | **2.6** |
+| **Cursor** | 5 | 5 | 4 | 5 | 5 | **4.8** |
+| **Atlas Browser** | 4 | 5 | 4 | 3 | 4 | **4.0** |
+| **Notion AI** | 4 | 4 | 3 | 4 | 4 | **3.8** |
+
+## Per-product rationale
+
+| Product | Pattern & why it scores this way |
+|---|---|
+| **Claude.ai web** | The AI *is* the app: full-screen chat with **Artifacts** as a right-side canvas. No awareness of an external object you're configuring (you paste/Projects), so it's powerful but unbound — low relevance to an object-centric tool. |
+| **Claude Code** | Agentic CLI/IDE companion that **reads the working tree, runs commands, edits files, and checkpoints** — it knows your context and acts on it. Always-on session, deep filesystem integration. The closest analog to what Studio's AI already aspires to (checkpoints + revert + Plan). |
+| **ChatGPT** | Standalone chat with a **Canvas** mode for docs/code; relies on memory/custom-instructions rather than live app context. Strong generator, weak at "knows what you're looking at" — same unbound limitation as Claude.ai web. |
+| **Cursor** | **Best fit.** Right-side chat **plus inline `Cmd+K`** in the editor, `@`-references to files/symbols, codebase indexing, and in-editor diffs. On-demand yet instantly reachable; acts directly on the open object. The reference pattern for Studio Direction 1. |
+| **Atlas Browser** | An AI **sidebar companion that auto-reads the current web page** and can act on it (agent mode). Demonstrates ambient, no-setup context awareness over *any* surface — but generic DOM-level, not structured by an object model, so integration depth is shallow. |
+| **Notion AI** | Lives **inside the object you're editing**: inline via slash/selection and a side Q&A panel, editing the document in place. Knows the current page/workspace. Assistive rather than agentic, but the in-object placement is highly transferable. |
+
+## Synthesis — the right AI pattern for Studio
+
+For a configuration tool where the user is **always inside a specific object** (a workflow, a record, a
+step, a field), the winning pattern is the **Cursor / Claude Code hybrid, not the Claude.ai / ChatGPT
+full-screen chat**: AI that is **on-demand but instantly reachable** (a keyboard summon like `⌘I`/`⌘K`,
+opening as a dismissible side-sheet) rather than a panel that permanently occupies the prime rail —
+which is exactly Studio's current mistake. It must be **context-aware by default**: Studio has an
+advantage Atlas Browser has to fake — it *owns the object model*, so the assistant can bind to the
+current workflow/step/field with certainty (the existing `⤳ Subcontractor Form` context chip proves the
+hook exists) instead of guessing from the DOM. And it must be **canvas-integrated and agentic**: able to
+read and *act on* the selected object inline (Cursor's `Cmd+K`, Claude Code's edit-and-checkpoint),
+which Studio already half-implements via checkpoints + revert. The prescription: **free the left rail
+for navigation, move the AI to an on-demand context-bound side-sheet, make "ask/act on *this* step/field"
+a one-keystroke action, and keep the agentic checkpoint/Plan model** — combining Cursor's placement,
+Claude Code's agency, Atlas's ambient awareness, and Notion's in-object inline edits.
+
 **Headline:** Studio is **average overall (3.0)** but **bimodal** — a top-quartile branching/AI engine wrapped in a bottom-quartile navigation shell. The fix is re-composition (Section D), not reinvention.
