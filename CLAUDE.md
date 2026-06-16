@@ -11,9 +11,9 @@ Track decisions, findings, and deliverable progress across audit sessions.
 ## Status
 - [x] A. Current State Map  (verified against live screenshots)
 - [x] B. Competitive Benchmark Summary  (`B_competitive_benchmark.md`)
-- [ ] C. Prioritized Issue List (20+ issues)
-- [ ] D. Navigation Redesign Proposal
-- [ ] E. Top 3 Quick Wins
+- [ ] C. Prioritized Issue List (20+ issues)  — SKIPPED for now per user request
+- [x] D. Navigation Redesign Proposal  (`D_navigation_redesign.md`, 3 directions)
+- [x] E. Dashboard Redesign  (`E_dashboard_redesign.md`) — user redefined E from "Top 3 Quick Wins" to a home/dashboard redesign
 
 ## Key Decisions
 - Section A written in `A_current_state_map.md`, then corrected against 3 batches of real screenshots.
