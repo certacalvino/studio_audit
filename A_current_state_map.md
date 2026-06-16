@@ -34,13 +34,16 @@ Studio Shell
 │       🔴 Environment context is absent at App-List level but dominant inside an app
 │
 ├── Tab strip (horizontal, accumulating)
-│   ├── Mixes object tabs + view tabs + app-destination tabs in one flat row
+│   ├── ✅ TAB GROUPS exist: an app's tabs form a group (e.g. "Mayo Client App") with a
+│   │       menu → Flow view / Overrides / Settings / Close group (view-switch within group)
+│   ├── Mixes object tabs + view tabs + app-destination tabs in one row
 │   ├── 🔴 No de-duplication — observed two identical "Change Requests" tabs open at once
 │   ├── 🔴 Conflated semantics: a workflow tab, its Preview/Rules/JSON tabs, and app-level
 │   │       tabs (App Overrides, Configs, App Settings) all look like siblings
 │   ├── 🟡 Identity inconsistency: workflow tab = friendly name ("Subcontractor Form");
 │   │       record tab = raw TAG ("supplier_tCEpXz")
 │   └── 🔴 Overflow strategy at 8+ tabs undefined; no saved/unsaved cue on tabs
+│   🟡 Top-bar CTA is contextual: "Create Change Request" ⇄ "Review Pending" when a CR is open
 │
 └── Main canvas (everything else renders here)
 ```
@@ -162,6 +165,7 @@ Env + Draft switcher (single two-pane dropdown, top bar)
 └── DRAFTS: MY DRAFTS (Testing Ch ✓) · TEAM DRAFTS (author + "Xh ago") · + Create new draft · SWITCH →
     🟡 Drafts default to TIMESTAMP names ("16 Jun 16:32:46"); 46 uncurated drafts in Development
     ✅ Model is real: Environment → Draft(branch); promotion = a CR between tiers
+    🆕 Drafts are LOCKED to owner: "Other people's drafts are read-only … Unlock & take over"
 
 Change Requests (top-bar ⑂)
 ├── Sub-tabs: Review requested · Created by me · All   ✅ + Search by title + status filter (Open)
@@ -170,15 +174,22 @@ Change Requests (top-bar ⑂)
 │     #461  04 Jun 01:12:06 → Development · Needs Review
 │     #477  "No changes detected in the branch diff"  🔴 empty CRs are allowed
 │     #613/#424/#421/#416  "Untitled change request"  🟡 naming hygiene (mirrors drafts)
-└── CR detail (#461)
-    ├── Header ✅ GitHub-like: "RV wants to merge … → Development · opened … · No reviewers yet"
+└── CR detail (#461 / #630)
+    ├── Header ✅ GitHub-like: "CH wants to merge draft → Development · opened … · No reviewers yet (+Add)"
+    ├── ✅ AI auto-drafts TITLE + description + impact ("Summarizing changes · Assessing risk ·
+    │     Flagging follow-ups") with a Regenerate button → legacy "Untitled" CRs predate this
     ├── OVERVIEW  ✅ AI summary: Summary · Changes-by-entity · Impact (Low Risk)
+    │     ✅ Discussion: "Start a thread … or comment inline on specific changes in the Changes tab"
+    │        (threaded comments, Post ⌘↵) — inline + thread review DOES exist
     │     🟠 references entities by raw TAG (supplier_tCEpXz) — opaque to non-technical admins
-    └── CHANGES  ✅ real navigable diff:
-          • entity tree WORKFLOWS 3 / RECORDS 2 / APP SETTINGS 2, expandable to field/line (L68)
-          • +/~ markers, two-pane line-numbered JSON diff (Development vs draft), READ-ONLY
-          🔴 diff is RAW JSON only — no semantic/visual diff (can't be read by non-engineers)
-          🔴 no inline line-level comments; no review checklist / required reviewers (advisory only)
+    ├── CHANGES  ✅ real navigable diff:
+    │     • entity tree WORKFLOWS 3 / RECORDS 2 / APP SETTINGS 2, expandable to field/line (L68)
+    │     • +/~ markers, two-pane line-numbered JSON diff (Development vs draft), READ-ONLY
+    │     🔴 diff is RAW JSON only — no semantic/visual diff (can't be read by non-engineers)
+    └── MERGE = "Merge & Deploy ▾" with two modes (+ "Close"):
+          • Deploy but IGNORE in-progress workflows
+          • Deploy AND update in-progress workflows  🟡 "can take hours; cannot deploy again until done"
+          🟠 reviewers are optional/advisory (+Add); no required-reviewer gate before Merge & Deploy
 ```
 
 ---
@@ -191,7 +202,7 @@ Change Requests (top-bar ⑂)
 3. App List (453): no search/filter/folders/archive → junk-polluted.
 4. Tab strip conflates objects/views/app-destinations; no dedup; no overflow strategy.
 5. JSON errors/warnings: counts only, no jump-to; no in-builder diff.
-6. CR diff is raw JSON; no inline comments; no required-reviewer/approval gate.
+6. CR diff is RAW JSON only (no semantic/visual diff); no required-reviewer gate before Merge & Deploy.
 
 ### 🟠 Re-orientation / cognitive costs
 7. Preview↔JSON is a full tab swap (no side-by-side/sync).
@@ -208,10 +219,13 @@ Change Requests (top-bar ⑂)
 
 ### ✅ Existing strengths to extend (not replace)
 - Persistent left sub-nav already used in App Settings & App Overrides → precedent for §D navigator.
-- Real entity-tree diff + GitHub-style CR header.
+- Real entity-tree diff + GitHub-style CR header + inline/threaded review comments.
+- AI auto-drafts CR title/description/impact (Regenerate) — reduces naming-hygiene debt going forward.
 - AI is context-aware + agentic with checkpoints/revert.
-- Records/attribute/settings tables (typed, searchable, sortable).
-- Rules WHEN/DO model with search/filter/graph toggle.
+- Draft locking + "Unlock & take over" collaboration model.
+- Merge & Deploy with explicit in-progress-workflow handling (a thoughtful safety choice).
+- Tab groups (app-scoped) with view-switch menu.
+- Records/attribute/settings tables (typed, searchable, sortable); Rules WHEN/DO with search/filter/graph.
 
 ---
 
