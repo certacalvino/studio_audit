@@ -213,19 +213,39 @@
         </div>
       </div>
 
-      <!-- ZONE 7 — Status bar -->
-      <div class="status-bar">
-        <span class="sdot"><span class="d"></span> Development</span>
-        <span>changes 5</span>
-        <span style="color:var(--red)">errors 1</span>
-        <span style="color:var(--amber)">warnings 1</span>
-        <span class="right"><span class="kbd">⌘K</span> to navigate</span>
-      </div>
     </div>
+
+    <!-- ZONE 6 — persistent AI panel (always visible, no close) -->
+    <aside class="ai-panel">
+      <div class="aip-head">
+        <span class="aip-title"><span class="spark">✦</span> Studio AI</span>
+        <span class="ctx-chip" style="margin-left:auto">⤳ Subcontractor Details · Step 1 of 4 <span class="x">×</span></span>
+      </div>
+      <div class="aip-stream">
+        <div class="aip-suggest">
+          <span class="lead">Suggestion</span>
+          This step collects a Tax ID / EIN but has no format validation. Want me to add a rule requiring <b>NN-NNNNNNN</b> before the step can submit?
+        </div>
+        <div class="aip-msg user">Make the Email field required and validate the format.</div>
+        <div class="aip-thought">Editing Step 1 · Subcontractor Details…</div>
+        <div class="aip-msg">Done — added a <b>required</b> + <b>email-format</b> rule to the Email field on Step 1. Created a checkpoint so you can revert.</div>
+        <div class="checkpoint">◦ 02:47 PM Checkpoint created <span class="revert">↩ Revert</span></div>
+      </div>
+      <div class="aip-input">
+        <span class="aip-field">Ask about this…</span>
+        <span class="aip-send">↑</span>
+      </div>
+    </aside>
   </div>
 
-  <!-- ZONE 6 — AI summon affordance -->
-  <div class="fab">✦</div>
+  <!-- ZONE 7 — Status bar (full width) -->
+  <div class="status-bar">
+    <span class="sdot"><span class="d"></span> Development</span>
+    <span>changes 5</span>
+    <span style="color:var(--red)">errors 1</span>
+    <span style="color:var(--amber)">warnings 1</span>
+    <span class="right"><span class="kbd">⌘K</span> to navigate</span>
+  </div>
 </div>
 </body>
 </html>

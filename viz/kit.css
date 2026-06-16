@@ -385,6 +385,42 @@ body {
 .ai-input { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-3); border-top: 1px solid var(--border); }
 .ai-input .field { flex: 1; height: var(--control-h); border: 1px solid var(--border); border-radius: var(--radius-control); padding: 0 var(--sp-3); display: flex; align-items: center; color: var(--muted); font-size: var(--fs-body); }
 
+/* ---- Persistent AI panel (always-visible variant, no close button) -------- */
+.ai-panel {
+  width: var(--ai-panel-w); min-width: var(--ai-panel-w); background: var(--surface);
+  border-left: 1px solid var(--border); display: flex; flex-direction: column; min-height: 0;
+}
+.ai-panel .aip-head {
+  display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-3);
+  border-bottom: 1px solid var(--border);
+}
+.ai-panel .aip-title { font-weight: 600; font-size: var(--fs-body); display: flex; align-items: center; gap: 5px; }
+.ai-panel .aip-title .spark { color: var(--blue); }
+.ai-panel .aip-mode { margin-left: auto; }
+.ai-panel .aip-ctx { padding: var(--sp-3) var(--sp-3) 0; }
+.ai-panel .aip-stream { flex: 1; padding: var(--sp-3); display: flex; flex-direction: column; gap: var(--sp-3); overflow: hidden; }
+.ai-panel .aip-suggest {
+  font-size: var(--fs-table); color: var(--muted); line-height: 1.5;
+  background: var(--rail); border: 1px solid var(--border); border-radius: var(--radius-card);
+  padding: var(--sp-3);
+}
+.ai-panel .aip-suggest .lead { color: var(--text-faint); text-transform: uppercase; letter-spacing: var(--track-section); font-size: var(--fs-section); font-weight: var(--fw-section); display: block; margin-bottom: 4px; }
+.ai-panel .aip-msg { font-size: var(--fs-body); line-height: 1.5; }
+.ai-panel .aip-msg.user { align-self: flex-end; background: var(--blue-bg); color: var(--text); padding: var(--sp-2) var(--sp-3); border-radius: var(--radius-card); max-width: 85%; }
+.ai-panel .aip-thought { font-size: var(--fs-meta); color: var(--muted); border-left: 2px solid var(--border); padding-left: var(--sp-3); }
+.ai-panel .aip-input {
+  display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-3);
+  border-top: 1px solid var(--border);
+}
+.ai-panel .aip-field {
+  flex: 1; height: var(--control-h); border: 1px solid var(--border); border-radius: var(--radius-control);
+  padding: 0 var(--sp-3); display: flex; align-items: center; color: var(--muted); font-size: var(--fs-body);
+}
+.ai-panel .aip-send {
+  width: var(--control-h); height: var(--control-h); border-radius: var(--radius-control);
+  background: var(--blue); color: #fff; display: flex; align-items: center; justify-content: center;
+}
+
 /* ---- Layout row used by interior frames ----------------------------------- */
 .work-row { flex: 1; display: flex; min-height: 0; }
 .canvas { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--surface); }
