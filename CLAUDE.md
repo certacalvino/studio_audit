@@ -10,7 +10,7 @@ Track decisions, findings, and deliverable progress across audit sessions.
 
 ## Status
 - [x] A. Current State Map  (verified against live screenshots)
-- [ ] B. Competitive Benchmark Summary
+- [x] B. Competitive Benchmark Summary  (`B_competitive_benchmark.md`)
 - [ ] C. Prioritized Issue List (20+ issues)
 - [ ] D. Navigation Redesign Proposal
 - [ ] E. Top 3 Quick Wins
