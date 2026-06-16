@@ -16,11 +16,14 @@ Track decisions, findings, and deliverable progress across audit sessions.
 - [x] E. Dashboard Redesign  (`E_dashboard_redesign.md`) — user redefined E from "Top 3 Quick Wins" to a home/dashboard redesign
 - [x] F. Wireframe Briefs  (`F_wireframe_briefs.md`, Direction 0 recommended + Directions 1-3, designer-ready zone boxes)
 - [x] G. Component Inventory  (`G_component_inventory.md`, 12 shared atoms + density/a11y baselines)
+- [x] Visual Explorations — Direction 0 (`viz/`, 4 HTML/CSS frames @1440×900, all approved)
 
 ## Key Decisions
 - Section A written in `A_current_state_map.md`, then corrected against 3 batches of real screenshots.
 - Severity legend: 🔴 model break / 🟠 friction / 🟡 latent risk / ✅ existing strength to extend.
 - Audit will favor RE-COMPOSING existing patterns over inventing new ones (per task constraint).
+- Visual exploration medium: no Figma tooling in the web environment, so frames are built as **token-driven HTML/CSS** (G's tokens = CSS variables in `viz/tokens.css`; the 12 atoms = reusable classes in `viz/kit.css`) and screenshotted via headless Chromium (`viz/shot.mjs`). No hardcoded values — everything references a token. A designer can rebuild 1:1 in Figma from these.
+- **AI panel decision (revises F Zone 6):** the AI moved from a *summoned side-sheet* to a **persistent, always-on 320px panel** inside the app (no close button), present in the interior frames but NOT on the Dashboard. F Zone 6 reconciled; summoned variant kept for Directions 1–3.
 
 ## Verified facts (anchors for later sections)
 - AI rail is an **agentic, context-aware** assistant (context chips, checkpoints+revert, Plan mode) — not a passive chatbot.
@@ -32,4 +35,5 @@ Track decisions, findings, and deliverable progress across audit sessions.
 
 ## Session Log
 - 2026-06-16 — Initialized repo + CLAUDE.md. Drafted Section A, then revised it across 4 batches of live screenshots (App List, Open existing, Records, Subcontractor Form Preview/Rules/JSON, CR #461 + #630 Overview+Changes diff + inline comments + Merge & Deploy, Env/Draft switcher + locking, AI Plan mode + checkpoints, App Overrides, App Settings, tab groups). Then delivered: B (Competitive Benchmark, Studio avg 3.0 — bimodal: strong branching/AI, weak nav). Skipped C per request. D (3 nav directions + Dir 0 synthesis: sidebar+⌘K base + pipeline/changes rail + in-tab view switch). E (dashboard redesign replacing flat 453 list). F (designer-ready wireframe briefs, Dir 0 + 1-3). G (12-atom component inventory). All committed/pushed to `claude/magical-tesla-vzktpc`.
-- NEXT SESSION: Section C (Prioritized Issue List, 20+ issues) is the remaining deliverable; raw findings already captured in A §7.
+- 2026-06-16 — Visual exploration phase (branch `claude/blissful-galileo-2qigv1`). No Figma in the web env → built **Direction 0** as token-driven HTML/CSS frames in `viz/` (tokens.css + kit.css + Playwright shot.mjs harness), rendered @1440×900. Delivered & user-approved, one frame at a time: (1) Dashboard/Home — monochromatic sidebar icons, sandbox apps in a collapsed bucket; (2) App interior shell (sidebar + canvas + pipeline bar) on Records › Engagement, pipeline actions unified to env-color fill (dropped amber/Pre-Live conflict); (3) Workflow builder Preview (Subcontractor Form — step list + form render, segmented control); (4) Change Requests (CR list tabs + CR #461 detail, Overview = Summary/Changes/Impact). Mid-phase decision: AI became a **persistent 320px panel** (Frames 2–4, not Dashboard) — F Zone 6 reconciled. All committed/pushed.
+- NEXT SESSION: Section C (Prioritized Issue List, 20+ issues) is the remaining deliverable; raw findings already captured in A §7. Possible follow-on: build Directions 1–3 frames, or a clickable prototype linking the 4 Direction 0 frames.

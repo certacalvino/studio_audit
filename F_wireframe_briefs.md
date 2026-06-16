@@ -49,10 +49,15 @@ Preview/Rules/JSON segmented control.* No browser tabs; single breadcrumb-anchor
 - Contents: the active view — *Preview* (RECORD DETAILS + TASKS/steps left sub-column, form render right) · *Rules* (WHEN→DO list + search/filters/graph toggle) · *JSON* (line-numbered editor, error/warning gutter).
 - Interaction note: selecting a step/field highlights it and arms "Ask about this" in the AI sheet.
 
-**ZONE 6 — AI side-sheet (summoned, not permanent)**
-- Dimensions/weight: **360px** right overlay, slides over canvas, dismissible; full height between bars.
-- Contents: header `[ Chat | Plan ]` segmented + current-context chip `⤳ Subcontractor Form` · message stream w/ `Thought & Worked` collapsibles · `Checkpoint · Revert` row · input + 📎 + send.
-- Interaction note: opened by `⌘I` or the floating ✦ button; in **Plan** mode the composer asks a clarifying question before acting and the send button shows the ⊘ working state.
+**ZONE 6 — AI panel (persistent, always visible inside an app)**
+- *Revised in visual exploration (2026-06-16): the AI moved from a summoned side-sheet to a **persistent
+  always-on panel** inside the app interior — no close button, present in Frames 2–4 but **not** on the
+  Dashboard. Original "summoned" brief retained below for the alternate directions.*
+- Dimensions/weight: **320px** fixed right column, full height between top/pipeline bar and status bar;
+  canvas shrinks to ~780–840px to accommodate. Not present on the Dashboard/Home screen.
+- Contents: header `✦ Studio AI` + current-context chip (`⤳ Engagement` / `⤳ Subcontractor Details · Step 1 of 4` / `⤳ CR #461`) · one muted contextual **Suggestion** card · message stream w/ `Thought & Worked` collapsibles + `Checkpoint · Revert` row · input `Ask about this…` + send.
+- Interaction note: always-on (no dismiss); the context chip rebinds to whatever object/step/CR is active, and its `×` clears the binding without closing the panel. Optional `[ Chat | Plan ]` mode toggle still applies (Plan mode asks a clarifying question before acting).
+- *Alternate (summoned) variant for Directions 1–3:* **360px** right overlay, slides over canvas, dismissible; opened by `⌘I` or a floating ✦ button.
 
 **ZONE 7 — Status bar**
 - Dimensions/weight: full width × **28px**, fixed bottom, env-tinted.
