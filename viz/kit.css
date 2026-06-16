@@ -334,9 +334,10 @@ body {
   padding: 0 var(--sp-4); font-size: var(--fs-body); color: var(--text); margin: 0 var(--sp-2);
   border-radius: var(--radius-control);
 }
-.grail .gr-item .ic { width: 18px; text-align: center; }
+.grail .gr-item .ic { width: 18px; text-align: center; color: var(--muted); font-size: 14px; }
 .grail .gr-item .ct { margin-left: auto; font-size: var(--fs-meta); color: var(--muted); }
 .grail .gr-item.active { background: var(--surface); font-weight: 600; box-shadow: var(--shadow-sm); }
+.grail .gr-item.active .ic { color: var(--text); }
 .grail .gr-divider { font-size: var(--fs-section); font-weight: var(--fw-section); letter-spacing: var(--track-section);
   text-transform: uppercase; color: var(--text-faint); padding: var(--sp-3) var(--sp-4) var(--sp-1); }
 

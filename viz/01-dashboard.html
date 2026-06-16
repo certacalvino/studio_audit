@@ -26,6 +26,13 @@
   .group-label { display: flex; align-items: center; gap: var(--sp-2); }
   .group-label .line { flex: 1; height: 1px; background: var(--border); }
   .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-3); }
+  .collapsed-row {
+    display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-3) var(--sp-4);
+    border: 1px dashed var(--border); border-radius: var(--radius-card); background: var(--rail);
+    color: var(--muted); font-size: var(--fs-body);
+  }
+  .collapsed-row .ic { color: var(--muted); }
+  .collapsed-row .show { margin-left: auto; color: var(--blue); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -45,14 +52,14 @@
   <div class="home">
     <!-- LEFT global rail -->
     <nav class="grail">
-      <div class="gr-item active"><span class="ic">🏠</span> Home</div>
-      <div class="gr-item"><span class="ic">⭐</span> Starred apps</div>
-      <div class="gr-item"><span class="ic">🕘</span> Recent</div>
-      <div class="gr-item"><span class="ic">🗂</span> All apps <span class="ct">453</span></div>
+      <div class="gr-item active"><span class="ic">⌂</span> Home</div>
+      <div class="gr-item"><span class="ic">☆</span> Starred apps</div>
+      <div class="gr-item"><span class="ic">◷</span> Recent</div>
+      <div class="gr-item"><span class="ic">▤</span> All apps <span class="ct">453</span></div>
       <div class="gr-divider">Views</div>
-      <div class="gr-item"><span class="ic">🔀</span> Change Requests <span class="ct badge" style="color:#fff;background:var(--blue)">3</span></div>
-      <div class="gr-item"><span class="ic">🌿</span> Branch activity</div>
-      <div class="gr-item"><span class="ic">🗑</span> Sandbox / Test <span class="ct">412</span></div>
+      <div class="gr-item"><span class="ic">⇄</span> Change Requests <span class="ct">3</span></div>
+      <div class="gr-item"><span class="ic">⑂</span> Branch activity</div>
+      <div class="gr-item"><span class="ic">⊘</span> Sandbox / Test <span class="ct">412</span></div>
     </nav>
 
     <!-- MAIN -->
@@ -185,28 +192,34 @@
             </div>
           </div>
 
-          <!-- sandbox tile (muted) -->
-          <div class="app-tile sandbox" data-env="dev">
+          <div class="app-tile" data-env="qa">
             <div class="tile-head">
               <span class="star off">☆</span>
-              <span class="tile-name">Sandbox_Test_QA_2</span>
-              <span class="badge merged no-dot">sandbox</span>
+              <span class="tile-name">External Party Registry</span>
               <span class="muted">⋮</span>
             </div>
             <div class="env-health">
               <div class="eh dev filled"><span class="ehdot"></span>Dev</div>
-              <div class="eh qa"><span class="ehdot"></span>QA</div>
+              <div class="eh qa filled"><span class="ehdot"></span>QA</div>
               <div class="eh prelive"><span class="ehdot"></span>Pre-Live</div>
               <div class="eh live"><span class="ehdot"></span>Live</div>
             </div>
             <div class="tile-foot">
-              <span class="chip">0 CRs</span>
-              <span class="chip">1 draft</span>
-              <span>· 4d</span>
+              <span class="chip">1 open CR</span>
+              <span class="chip">2 drafts</span>
+              <span class="avatars"><span class="avatar sm green">RP</span></span>
+              <span>· 3d</span>
             </div>
           </div>
         </div>
       </section>
+
+      <!-- Collapsed sandbox / test bucket (hidden by default) -->
+      <div class="collapsed-row">
+        <span class="ic">⊘</span>
+        <span><strong>Sandbox / Test</strong> — 412 apps hidden (test&nbsp;m1–m14, studio-####, Sandbox_*, “check revert”)</span>
+        <span class="show">Show ▾</span>
+      </div>
 
     </main>
   </div>
