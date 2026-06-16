@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Frame 1 — Dashboard / Home</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="kit.css">
+<style>
+  /* frame-local composition only — no design values, only layout glue */
+  .home { flex: 1; display: flex; min-height: 0; }
+  .home-main { flex: 1; display: flex; flex-direction: column; min-width: 0; padding: var(--sp-5) var(--sp-6); gap: var(--sp-4); overflow: hidden; }
+  .attention { display: flex; gap: var(--sp-3); }
+  .att-card {
+    flex: 1; display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-3) var(--sp-4);
+    border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface);
+    box-shadow: var(--shadow-sm); font-size: var(--fs-body);
+  }
+  .att-card .n { font-size: var(--fs-h1); font-weight: 700; }
+  .att-card .ad { width: 10px; height: 10px; border-radius: var(--radius-pill); }
+  .att-card .txt { line-height: 1.25; }
+  .apps-head { display: flex; align-items: center; gap: var(--sp-3); }
+  .apps-head .h1 { flex: 1; }
+  .filter-row { display: flex; align-items: center; gap: var(--sp-2); }
+  .filter-row .spacer { flex: 1; }
+  .group { display: flex; flex-direction: column; gap: var(--sp-2); }
+  .group-label { display: flex; align-items: center; gap: var(--sp-2); }
+  .group-label .line { flex: 1; height: 1px; background: var(--border); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-3); }
+</style>
+</head>
+<body>
+<div class="frame" data-env="dev">
+
+  <!-- ZONE 1 — Top bar -->
+  <header class="topbar">
+    <span class="wordmark"><span class="dot">●</span> studio</span>
+    <div class="search-field">
+      <span>🔍</span><span>Search apps, workflows, records, CRs</span>
+      <span class="kbd">⌘K</span>
+    </div>
+    <span class="icon-btn">🔔<span class="bell-badge">3</span></span>
+    <span class="avatar">CH</span>
+  </header>
+
+  <div class="home">
+    <!-- LEFT global rail -->
+    <nav class="grail">
+      <div class="gr-item active"><span class="ic">🏠</span> Home</div>
+      <div class="gr-item"><span class="ic">⭐</span> Starred apps</div>
+      <div class="gr-item"><span class="ic">🕘</span> Recent</div>
+      <div class="gr-item"><span class="ic">🗂</span> All apps <span class="ct">453</span></div>
+      <div class="gr-divider">Views</div>
+      <div class="gr-item"><span class="ic">🔀</span> Change Requests <span class="ct badge" style="color:#fff;background:var(--blue)">3</span></div>
+      <div class="gr-item"><span class="ic">🌿</span> Branch activity</div>
+      <div class="gr-item"><span class="ic">🗑</span> Sandbox / Test <span class="ct">412</span></div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="home-main">
+
+      <!-- Attention strip -->
+      <section class="attention">
+        <div class="att-card"><span class="n" style="color:var(--blue)">3</span>
+          <span class="txt">CRs need <br>your review</span></div>
+        <div class="att-card"><span class="n" style="color:#7C3AED">2</span>
+          <span class="txt">drafts <br>you locked</span></div>
+        <div class="att-card"><span class="n" style="color:var(--amber)">1</span>
+          <span class="txt">Live-bound CR <br>awaiting approval</span></div>
+        <div class="att-card"><span class="n" style="color:var(--muted)">⚙</span>
+          <span class="txt">1 deploy <br>in progress</span></div>
+      </section>
+
+      <!-- Apps header -->
+      <div class="apps-head">
+        <h1 class="h1">Apps</h1>
+        <div class="segmented">
+          <span class="seg active">▦ Grid</span>
+          <span class="seg">☰ Table</span>
+        </div>
+        <button class="btn btn-primary">+ New app</button>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-row">
+        <span class="meta">Filter:</span>
+        <span class="filter">Owner ▾</span>
+        <span class="filter">Environment ▾</span>
+        <span class="filter">Status ▾</span>
+        <span class="spacer"></span>
+        <label class="toggle">☑ Hide sandbox / test (412)</label>
+      </div>
+
+      <!-- Starred group -->
+      <section class="group">
+        <div class="group-label"><span class="section-label">Starred</span><span class="line"></span></div>
+        <div class="grid">
+
+          <!-- Tile: Mayo Client App (review for me) -->
+          <div class="app-tile review-for-me" data-env="dev">
+            <div class="tile-head">
+              <span class="star">★</span>
+              <span class="tile-name">Mayo Client App</span>
+              <span class="badge needs-review no-dot">Review for you</span>
+              <span class="muted">⋮</span>
+            </div>
+            <div class="env-health">
+              <div class="eh dev filled"><span class="ehdot"></span>Dev</div>
+              <div class="eh qa promote"><span class="ehdot"></span>QA</div>
+              <div class="eh prelive"><span class="ehdot"></span>Pre-Live</div>
+              <div class="eh live"><span class="ehdot"></span>Live</div>
+            </div>
+            <div class="tile-foot">
+              <span class="chip cr">3 open CRs</span>
+              <span class="chip">46 drafts</span>
+              <span class="avatars"><span class="avatar sm">CH</span><span class="avatar sm green">RP</span></span>
+              <span>· 2h</span>
+            </div>
+          </div>
+
+          <!-- Tile: TPRM App -->
+          <div class="app-tile" data-env="qa">
+            <div class="tile-head">
+              <span class="star">★</span>
+              <span class="tile-name">TPRM App for Risk Domains</span>
+              <span class="muted">⋮</span>
+            </div>
+            <div class="env-health">
+              <div class="eh dev filled"><span class="ehdot"></span>Dev</div>
+              <div class="eh qa filled"><span class="ehdot"></span>QA</div>
+              <div class="eh prelive promote"><span class="ehdot"></span>Pre-Live</div>
+              <div class="eh live"><span class="ehdot"></span>Live</div>
+            </div>
+            <div class="tile-foot">
+              <span class="chip cr">1 open CR</span>
+              <span class="chip">8 drafts</span>
+              <span class="avatars"><span class="avatar sm amber">MK</span></span>
+              <span>· 1d</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Recently active group -->
+      <section class="group">
+        <div class="group-label"><span class="section-label">Recently active</span><span class="line"></span></div>
+        <div class="grid">
+          <div class="app-tile" data-env="prelive">
+            <div class="tile-head">
+              <span class="star off">☆</span>
+              <span class="tile-name">Vendor Onboarding</span>
+              <span class="badge in-progress no-dot">⚙ Deploying</span>
+              <span class="muted">⋮</span>
+            </div>
+            <div class="env-health">
+              <div class="eh dev filled"><span class="ehdot"></span>Dev</div>
+              <div class="eh qa filled"><span class="ehdot"></span>QA</div>
+              <div class="eh prelive filled"><span class="ehdot"></span>Pre-Live</div>
+              <div class="eh live promote"><span class="ehdot"></span>Live</div>
+            </div>
+            <div class="tile-foot">
+              <span class="chip cr">2 open CRs</span>
+              <span class="chip">5 drafts</span>
+              <span class="avatars"><span class="avatar sm gray">JD</span></span>
+              <span>· 5h</span>
+            </div>
+          </div>
+
+          <div class="app-tile" data-env="dev">
+            <div class="tile-head">
+              <span class="star off">☆</span>
+              <span class="tile-name">Engagement Intake</span>
+              <span class="muted">⋮</span>
+            </div>
+            <div class="env-health">
+              <div class="eh dev filled"><span class="ehdot"></span>Dev</div>
+              <div class="eh qa"><span class="ehdot"></span>QA</div>
+              <div class="eh prelive"><span class="ehdot"></span>Pre-Live</div>
+              <div class="eh live"><span class="ehdot"></span>Live</div>
+            </div>
+            <div class="tile-foot">
+              <span class="chip">0 open CRs</span>
+              <span class="chip">3 drafts</span>
+              <span class="avatars"><span class="avatar sm">CH</span></span>
+              <span>· 1d</span>
+            </div>
+          </div>
+
+          <!-- sandbox tile (muted) -->
+          <div class="app-tile sandbox" data-env="dev">
+            <div class="tile-head">
+              <span class="star off">☆</span>
+              <span class="tile-name">Sandbox_Test_QA_2</span>
+              <span class="badge merged no-dot">sandbox</span>
+              <span class="muted">⋮</span>
+            </div>
+            <div class="env-health">
+              <div class="eh dev filled"><span class="ehdot"></span>Dev</div>
+              <div class="eh qa"><span class="ehdot"></span>QA</div>
+              <div class="eh prelive"><span class="ehdot"></span>Pre-Live</div>
+              <div class="eh live"><span class="ehdot"></span>Live</div>
+            </div>
+            <div class="tile-foot">
+              <span class="chip">0 CRs</span>
+              <span class="chip">1 draft</span>
+              <span>· 4d</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+</body>
+</html>

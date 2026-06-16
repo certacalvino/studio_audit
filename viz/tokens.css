@@ -1,0 +1,99 @@
+/* ============================================================================
+   Studio — Navigation Explorations
+   tokens.css — single source of truth for all design values.
+   Derived from G_component_inventory.md + F_wireframe_briefs.md.
+   RULE: no frame or component may hardcode a color / size / type value.
+         Everything references a var() defined here.
+   ============================================================================ */
+
+:root {
+  /* --- Environment risk colors (fixed across all directions) ----------- */
+  --env-dev:       #16A34A;   /* Development — green  */
+  --env-qa:        #2563EB;   /* QA          — blue   */
+  --env-prelive:   #D97706;   /* Pre-Live    — amber  */
+  --env-live:      #DC2626;   /* Live        — red    */
+
+  /* tint helpers (env color at low alpha for bars/selection) */
+  --env-dev-tint:     rgba(22, 163, 74, 0.08);
+  --env-dev-tint-sel: rgba(22, 163, 74, 0.12);
+  --warm-dirty:       #FFF7ED;   /* "changes in this draft" warm bg */
+
+  /* --- Neutrals -------------------------------------------------------- */
+  --surface:    #FFFFFF;
+  --rail:       #F8F9FB;
+  --border:     #E5E7EB;
+  --text:       #111827;
+  --muted:      #6B7280;
+  --text-faint: #9CA3AF;
+
+  /* semantic fills for status atoms */
+  --blue:       #2563EB;
+  --blue-bg:    #EFF6FF;
+  --green:      #16A34A;
+  --green-bg:   #ECFDF5;
+  --amber:      #D97706;
+  --amber-bg:   #FFFBEB;
+  --red:        #DC2626;
+  --red-bg:     #FEF2F2;
+  --gray:       #6B7280;
+  --gray-bg:    #F3F4F6;
+
+  /* diff markers */
+  --add:    var(--green);
+  --modify: var(--amber);
+  --remove: var(--red);
+
+  /* --- Radii ----------------------------------------------------------- */
+  --radius-card:    8px;
+  --radius-control: 6px;
+  --radius-pill:    999px;
+
+  /* --- Type scale ------------------------------------------------------ */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", "JetBrains Mono", "Roboto Mono", ui-monospace, Menlo, monospace;
+
+  --fs-h1:      18px;   --fw-h1:      600;   --lh-h1:   24px;
+  --fs-section: 11px;   --fw-section: 600;   /* UPPERCASE, tracked */
+  --fs-body:    13px;   --fw-body:    400;
+  --fs-table:   12px;
+  --fs-mono:    12px;
+  --fs-meta:    11px;   /* badges, captions */
+  --track-section: 0.06em;
+
+  /* --- Density baselines (apply to all) -------------------------------- */
+  --control-h:        32px;
+  --control-h-compact:28px;
+  --row-h:            36px;
+  --tap-min:          32px;
+
+  /* --- Layout dimensions (Direction 0 chrome, from F) ------------------ */
+  --topbar-h:      48px;
+  --pipeline-h:    40px;
+  --canvas-head-h: 56px;
+  --statusbar-h:   28px;
+  --sidebar-w:     280px;
+  --sidebar-w-min: 56px;
+  --ai-sheet-w:    360px;
+
+  /* --- Spacing scale --------------------------------------------------- */
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 20px; --sp-6: 24px; --sp-8: 32px;
+
+  /* --- Elevation ------------------------------------------------------- */
+  --shadow-sm:  0 1px 2px rgba(16, 24, 40, 0.06);
+  --shadow-pop: 0 4px 16px rgba(16, 24, 40, 0.12);
+  --shadow-seg: 0 1px 2px rgba(16, 24, 40, 0.10);
+
+  /* --- Focus ----------------------------------------------------------- */
+  --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--blue);
+
+  /* --- Frame canvas ---------------------------------------------------- */
+  --frame-w: 1440px;
+  --frame-h: 900px;
+}
+
+/* environment scoping: set --env on any container to recolor env-driven atoms */
+[data-env="dev"]     { --env: var(--env-dev);     --env-tint: var(--env-dev-tint); }
+[data-env="qa"]      { --env: var(--env-qa);      --env-tint: rgba(37,99,235,0.08); }
+[data-env="prelive"] { --env: var(--env-prelive); --env-tint: rgba(217,119,6,0.08); }
+[data-env="live"]    { --env: var(--env-live);    --env-tint: rgba(220,38,38,0.08); }

@@ -1,0 +1,393 @@
+/* ============================================================================
+   kit.css — the atomic component library.
+   Implements G_component_inventory.md (12 atoms) + shared Direction-0 chrome.
+   Every value references a token from tokens.css. Compose frames from these.
+   ============================================================================ */
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-body);
+  color: var(--text);
+  background: var(--rail);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Frame shell ---------------------------------------------------------- */
+.frame {
+  width: var(--frame-w);
+  height: var(--frame-h);
+  background: var(--surface);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* ---- Typography helpers --------------------------------------------------- */
+.h1 { font-size: var(--fs-h1); font-weight: var(--fw-h1); line-height: var(--lh-h1); margin: 0; }
+.section-label {
+  font-size: var(--fs-section); font-weight: var(--fw-section);
+  letter-spacing: var(--track-section); text-transform: uppercase; color: var(--muted);
+}
+.meta  { font-size: var(--fs-meta); color: var(--muted); }
+.muted { color: var(--muted); }
+.mono  { font-family: var(--font-mono); font-size: var(--fs-mono); }
+
+/* ====== Shared chrome ====================================================== */
+
+/* Top bar (Zone 1) — 48px */
+.topbar {
+  height: var(--topbar-h); min-height: var(--topbar-h);
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: var(--sp-4); padding: 0 var(--sp-4);
+}
+.wordmark { font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
+.wordmark .dot { color: var(--env-dev); }
+
+/* global search / ⌘K field */
+.search-field {
+  flex: 1; max-width: 520px; margin: 0 auto;
+  height: var(--control-h); border: 1px solid var(--border);
+  border-radius: var(--radius-control); background: var(--rail);
+  display: flex; align-items: center; gap: var(--sp-2); padding: 0 var(--sp-3);
+  color: var(--muted); font-size: var(--fs-body);
+}
+.search-field .kbd { margin-left: auto; }
+.kbd {
+  font-family: var(--font-mono); font-size: var(--fs-meta);
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 1px 5px; color: var(--muted); background: var(--surface);
+}
+.icon-btn {
+  width: var(--control-h); height: var(--control-h);
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-control); color: var(--muted); position: relative;
+}
+.bell-badge {
+  position: absolute; top: 2px; right: 2px; min-width: 15px; height: 15px;
+  background: var(--blue); color: #fff; border-radius: var(--radius-pill);
+  font-size: 9px; font-weight: 700; display: flex; align-items: center;
+  justify-content: center; padding: 0 3px;
+}
+.avatar {
+  width: 28px; height: 28px; border-radius: var(--radius-pill);
+  background: var(--blue); color: #fff; font-size: var(--fs-meta); font-weight: 600;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.avatar.sm { width: 22px; height: 22px; font-size: 10px; }
+.avatar.amber { background: var(--amber); }
+.avatar.green { background: var(--green); }
+.avatar.gray  { background: var(--gray); }
+
+/* ====== ATOM 1 — Environment pill ========================================= */
+.env-pill {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  height: var(--control-h-compact); padding: 0 var(--sp-3);
+  border: 1px solid var(--border); border-radius: var(--radius-pill);
+  background: var(--surface); font-size: var(--fs-body); font-weight: 500;
+}
+.env-pill .env-dot {
+  width: 8px; height: 8px; border-radius: var(--radius-pill); background: var(--env);
+}
+.env-pill .sep { color: var(--text-faint); }
+.env-pill .lock { color: var(--muted); font-size: var(--fs-meta); }
+.env-pill .caret { color: var(--muted); }
+
+/* ====== ATOM 2 — Pipeline stepper ========================================= */
+.pipeline-stepper { display: inline-flex; align-items: center; }
+.pl-node {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  padding: 4px var(--sp-3); border-radius: var(--radius-pill);
+  font-size: var(--fs-body); font-weight: 500; color: var(--muted);
+}
+.pl-node .nd { width: 8px; height: 8px; border-radius: var(--radius-pill);
+  border: 1.5px solid currentColor; }
+.pl-node.current {
+  color: var(--env); background: var(--env-tint); font-weight: 600;
+}
+.pl-node.current .nd { background: var(--env); border-color: var(--env); }
+.pl-node.upstream { color: var(--muted); }
+.pl-node.upstream .nd { background: var(--muted); border-color: var(--muted); }
+.pl-node.downstream { color: var(--text-faint); }
+.pl-count {
+  font-size: 10px; font-weight: 700; background: var(--env); color: #fff;
+  border-radius: var(--radius-pill); padding: 0 5px; min-width: 16px; text-align: center;
+}
+.pl-node.upstream .pl-count { background: var(--muted); }
+.pl-conn { width: 28px; height: 0; border-top: 1.5px solid var(--border); margin: 0 2px; }
+.pl-conn.active { border-top-color: var(--env); border-top-width: 2px; }
+
+/* ====== ATOM 3 — Segmented view control =================================== */
+.segmented {
+  display: inline-flex; padding: 2px; background: var(--rail);
+  border: 1px solid var(--border); border-radius: var(--radius-control); gap: 2px;
+}
+.segmented .seg {
+  height: 24px; padding: 0 var(--sp-3); display: inline-flex; align-items: center;
+  gap: 5px; border-radius: 4px; font-size: var(--fs-table); font-weight: 500;
+  color: var(--muted); white-space: nowrap;
+}
+.segmented .seg.active {
+  background: var(--surface); color: var(--text); font-weight: 600;
+  box-shadow: var(--shadow-seg);
+}
+.seg .dirty { width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--modify); }
+.seg .err   { width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--red); }
+
+/* ====== ATOM 4 — Entity-tree diff row ===================================== */
+.diff-group {
+  display: flex; align-items: center; gap: var(--sp-2); height: var(--control-h);
+  padding: 0 var(--sp-3); font-size: var(--fs-section); font-weight: var(--fw-section);
+  letter-spacing: var(--track-section); text-transform: uppercase; color: var(--muted);
+}
+.diff-group .gcount {
+  font-size: 10px; font-weight: 700; color: var(--muted);
+  background: var(--gray-bg); border-radius: var(--radius-pill); padding: 0 6px;
+}
+.diff-row {
+  display: flex; align-items: center; gap: var(--sp-2); height: var(--row-h);
+  padding: 0 var(--sp-3) 0 var(--sp-6); font-size: var(--fs-body); cursor: default;
+  border-left: 2px solid transparent;
+}
+.diff-row:hover { background: var(--rail); }
+.diff-row.selected { background: var(--env-tint); border-left-color: var(--env); }
+.diff-row .tw { width: 16px; color: var(--text-faint); }
+.diff-row .name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.diff-row .lref { font-family: var(--font-mono); font-size: var(--fs-meta); color: var(--text-faint); }
+.diff-row .comment-dot { color: var(--blue); font-size: var(--fs-meta); }
+.chg { font-family: var(--font-mono); font-weight: 700; width: 12px; text-align: center; }
+.chg.add    { color: var(--add); }
+.chg.modify { color: var(--modify); }
+.chg.remove { color: var(--remove); }
+
+/* ====== ATOM 5 — Status badge ============================================= */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 var(--sp-2);
+  border-radius: var(--radius-pill); font-size: var(--fs-meta); font-weight: 600;
+  white-space: nowrap;
+}
+.badge::before { content: ""; width: 6px; height: 6px; border-radius: var(--radius-pill); background: currentColor; }
+.badge.needs-review { color: var(--blue);  background: var(--blue-bg); }
+.badge.approved     { color: var(--green); background: var(--green-bg); }
+.badge.pending      { color: var(--amber); background: var(--amber-bg); }
+.badge.merged       { color: var(--gray);  background: var(--gray-bg); }
+.badge.closed       { color: var(--red);   background: var(--red-bg); }
+.badge.in-progress  { color: var(--blue);  background: var(--blue-bg); }
+.badge.no-dot::before { display: none; }
+
+/* ====== ATOM 6 — AI context chip ========================================== */
+.ctx-chip {
+  display: inline-flex; align-items: center; gap: var(--sp-1); height: 24px;
+  padding: 0 var(--sp-2); border-radius: var(--radius-pill);
+  background: var(--blue-bg); color: var(--blue); font-size: var(--fs-meta); font-weight: 500;
+}
+.ctx-chip .x { opacity: 0.6; }
+
+/* ====== ATOM 7 — Checkpoint / Revert row ================================== */
+.checkpoint {
+  display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-meta); color: var(--muted); border-top: 1px solid var(--border);
+}
+.checkpoint .revert { margin-left: auto; color: var(--blue); font-weight: 600; }
+
+/* ====== ATOM 8 — App tile (dashboard) ===================================== */
+.app-tile {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card);
+  padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3);
+  box-shadow: var(--shadow-sm); position: relative;
+}
+.app-tile.review-for-me { border-left: 3px solid var(--blue); }
+.app-tile.sandbox { opacity: 0.62; }
+.app-tile .tile-head { display: flex; align-items: center; gap: var(--sp-2); }
+.app-tile .tile-name { font-weight: 600; font-size: var(--fs-body); flex: 1; }
+.app-tile .star { color: var(--amber); }
+.app-tile .star.off { color: var(--border); }
+/* env health row — four fixed dots */
+.env-health { display: flex; align-items: center; gap: var(--sp-3); }
+.env-health .eh {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em;
+}
+.env-health .eh .ehdot {
+  width: 10px; height: 10px; border-radius: var(--radius-pill);
+  border: 1.5px solid var(--c); background: transparent;
+}
+.env-health .eh.filled .ehdot { background: var(--c); }
+.env-health .eh.promote .ehdot { background: var(--c); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 22%, transparent); }
+.eh.dev     { --c: var(--env-dev); }
+.eh.qa      { --c: var(--env-qa); }
+.eh.prelive { --c: var(--env-prelive); }
+.eh.live    { --c: var(--env-live); }
+.tile-foot { display: flex; align-items: center; gap: var(--sp-3); font-size: var(--fs-meta); color: var(--muted); }
+.tile-foot .chip {
+  display: inline-flex; align-items: center; gap: 4px; padding: 1px var(--sp-2);
+  background: var(--gray-bg); border-radius: var(--radius-pill); font-weight: 600; color: var(--text);
+}
+.tile-foot .chip.cr { color: var(--blue); background: var(--blue-bg); }
+.tile-foot .avatars { display: flex; margin-left: auto; }
+.tile-foot .avatars .avatar { margin-left: -6px; border: 2px solid var(--surface); }
+
+/* ====== ATOM 9 — Table (typed list) ======================================= */
+.table { width: 100%; border-collapse: collapse; font-size: var(--fs-table); }
+.table thead th {
+  text-align: left; font-size: var(--fs-section); font-weight: var(--fw-section);
+  letter-spacing: var(--track-section); text-transform: uppercase; color: var(--muted);
+  padding: var(--sp-2) var(--sp-3); border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+.table thead th .sort { color: var(--text-faint); margin-left: 3px; }
+.table tbody td { padding: 0 var(--sp-3); height: var(--row-h); border-bottom: 1px solid var(--border); }
+.table tbody tr:hover { background: var(--rail); }
+.table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.table .lock { color: var(--text-faint); }
+
+/* ====== ATOM 10 — Command palette (⌘K) — overlay (used as inset preview) == */
+.cmdk {
+  width: 560px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-card); box-shadow: var(--shadow-pop); overflow: hidden;
+}
+.cmdk .cmdk-input {
+  display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--border); font-size: var(--fs-h1); color: var(--muted);
+}
+.cmdk .cmdk-group { padding: var(--sp-2) var(--sp-4) 4px; }
+.cmdk .cmdk-item {
+  display: flex; align-items: center; gap: var(--sp-3); height: var(--row-h);
+  padding: 0 var(--sp-4); font-size: var(--fs-body);
+}
+.cmdk .cmdk-item.active { background: var(--blue-bg); }
+
+/* ====== ATOM 11 — Notification item ======================================= */
+.notif {
+  display: flex; align-items: flex-start; gap: var(--sp-3); padding: var(--sp-3);
+  border-bottom: 1px solid var(--border); font-size: var(--fs-body);
+}
+.notif.unread { background: var(--blue-bg); }
+.notif .nbody { flex: 1; line-height: 1.4; }
+.notif .ntime { font-size: var(--fs-meta); color: var(--text-faint); }
+.notif .nlink { color: var(--blue); font-weight: 600; }
+
+/* ====== ATOM 12 — Empty state ============================================= */
+.empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--sp-3); padding: var(--sp-8); text-align: center; color: var(--muted);
+}
+.empty .ic { font-size: 28px; opacity: 0.5; }
+.empty .et { font-weight: 600; color: var(--text); }
+.empty .btn-primary { margin-top: var(--sp-2); }
+
+/* ---- Buttons (shared) ----------------------------------------------------- */
+.btn {
+  height: var(--control-h); padding: 0 var(--sp-3); border-radius: var(--radius-control);
+  border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  font-size: var(--fs-body); font-weight: 500; display: inline-flex; align-items: center;
+  gap: var(--sp-2); white-space: nowrap;
+}
+.btn-primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+.btn-env { background: var(--env); border-color: var(--env); color: #fff; }
+.btn.sm { height: var(--control-h-compact); padding: 0 var(--sp-2); font-size: var(--fs-table); }
+
+/* ---- Filter chip / dropdown trigger -------------------------------------- */
+.filter {
+  display: inline-flex; align-items: center; gap: 5px; height: var(--control-h-compact);
+  padding: 0 var(--sp-3); border: 1px solid var(--border); border-radius: var(--radius-control);
+  background: var(--surface); font-size: var(--fs-table); color: var(--text);
+}
+.toggle { display: inline-flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-table); color: var(--muted); }
+
+/* ---- Sidebar (Zone 3) ----------------------------------------------------- */
+.sidebar {
+  width: var(--sidebar-w); min-width: var(--sidebar-w); background: var(--rail);
+  border-right: 1px solid var(--border); display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.sb-head { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-3); }
+.sb-head .app { font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sb-filter {
+  margin: 0 var(--sp-3) var(--sp-2); height: var(--control-h-compact);
+  border: 1px solid var(--border); border-radius: var(--radius-control); background: var(--surface);
+  display: flex; align-items: center; gap: var(--sp-2); padding: 0 var(--sp-2);
+  color: var(--muted); font-size: var(--fs-table);
+}
+.sb-seg { margin: 0 var(--sp-3) var(--sp-3); }
+.sb-section { padding: var(--sp-3) var(--sp-3) 2px; }
+.sb-item {
+  display: flex; align-items: center; gap: var(--sp-2); height: var(--control-h);
+  padding: 0 var(--sp-3); font-size: var(--fs-body); border-radius: var(--radius-control);
+  margin: 0 var(--sp-2); color: var(--text);
+}
+.sb-item .ic { width: 18px; text-align: center; color: var(--muted); }
+.sb-item .ct { margin-left: auto; font-size: var(--fs-meta); color: var(--muted); }
+.sb-item .ct.badge-num { background: var(--blue); color: #fff; border-radius: var(--radius-pill); padding: 0 6px; font-weight: 700; }
+.sb-item.active { background: var(--surface); font-weight: 600; box-shadow: var(--shadow-sm); }
+.sb-item.sub { padding-left: var(--sp-6); font-size: var(--fs-table); }
+
+/* global left rail (dashboard) */
+.grail {
+  width: 232px; min-width: 232px; background: var(--rail); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; padding: var(--sp-3) 0;
+}
+.grail .gr-item {
+  display: flex; align-items: center; gap: var(--sp-2); height: var(--control-h);
+  padding: 0 var(--sp-4); font-size: var(--fs-body); color: var(--text); margin: 0 var(--sp-2);
+  border-radius: var(--radius-control);
+}
+.grail .gr-item .ic { width: 18px; text-align: center; }
+.grail .gr-item .ct { margin-left: auto; font-size: var(--fs-meta); color: var(--muted); }
+.grail .gr-item.active { background: var(--surface); font-weight: 600; box-shadow: var(--shadow-sm); }
+.grail .gr-divider { font-size: var(--fs-section); font-weight: var(--fw-section); letter-spacing: var(--track-section);
+  text-transform: uppercase; color: var(--text-faint); padding: var(--sp-3) var(--sp-4) var(--sp-1); }
+
+/* ---- Pipeline bar (Zone 2) ------------------------------------------------ */
+.pipeline-bar {
+  height: var(--pipeline-h); min-height: var(--pipeline-h);
+  display: flex; align-items: center; gap: var(--sp-4); padding: 0 var(--sp-4);
+  background: var(--env-tint); border-bottom: 2px solid var(--env);
+}
+.pipeline-bar .center { margin: 0 auto; }
+.pipeline-bar .right { margin-left: auto; display: flex; align-items: center; gap: var(--sp-2); }
+
+/* ---- Canvas header (Zone 4) ----------------------------------------------- */
+.canvas-head {
+  height: var(--canvas-head-h); min-height: var(--canvas-head-h);
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: var(--sp-3); padding: 0 var(--sp-4);
+}
+.breadcrumb { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-body); color: var(--muted); }
+.breadcrumb .crumb.current { color: var(--text); font-weight: 600; }
+.breadcrumb .sep { color: var(--text-faint); }
+.canvas-head .right { margin-left: auto; display: flex; align-items: center; gap: var(--sp-3); }
+
+/* ---- Status bar (Zone 7) -------------------------------------------------- */
+.status-bar {
+  height: var(--statusbar-h); min-height: var(--statusbar-h);
+  display: flex; align-items: center; gap: var(--sp-4); padding: 0 var(--sp-4);
+  background: var(--env-tint); border-top: 1px solid var(--border);
+  font-size: var(--fs-meta); color: var(--text);
+}
+.status-bar .sdot { display: inline-flex; align-items: center; gap: 5px; }
+.status-bar .sdot .d { width: 7px; height: 7px; border-radius: var(--radius-pill); background: var(--env); }
+.status-bar .right { margin-left: auto; }
+
+/* ---- AI side-sheet (Zone 6) ----------------------------------------------- */
+.ai-sheet {
+  width: var(--ai-sheet-w); min-width: var(--ai-sheet-w); background: var(--surface);
+  border-left: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: var(--shadow-pop);
+}
+.ai-head { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-3); border-bottom: 1px solid var(--border); }
+.ai-stream { flex: 1; padding: var(--sp-3); display: flex; flex-direction: column; gap: var(--sp-3); overflow: hidden; }
+.ai-msg { font-size: var(--fs-body); line-height: 1.5; }
+.ai-msg.user { align-self: flex-end; background: var(--blue-bg); padding: var(--sp-2) var(--sp-3); border-radius: var(--radius-card); max-width: 80%; }
+.ai-thought { font-size: var(--fs-meta); color: var(--muted); border-left: 2px solid var(--border); padding-left: var(--sp-3); }
+.ai-input { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-3); border-top: 1px solid var(--border); }
+.ai-input .field { flex: 1; height: var(--control-h); border: 1px solid var(--border); border-radius: var(--radius-control); padding: 0 var(--sp-3); display: flex; align-items: center; color: var(--muted); font-size: var(--fs-body); }
+
+/* ---- Layout row used by interior frames ----------------------------------- */
+.work-row { flex: 1; display: flex; min-height: 0; }
+.canvas { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--surface); }
+.canvas-body { flex: 1; overflow: hidden; padding: var(--sp-5) var(--sp-6); min-height: 0; }
+
+/* card */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-card); }
