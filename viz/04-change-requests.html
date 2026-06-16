@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Frame 4 — Change Requests (list + CR detail)</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="kit.css">
+<style>
+  /* frame-local composition only */
+
+  /* left master: CR list */
+  .cr-list { width: 320px; min-width: 320px; border-right: 1px solid var(--border);
+    background: var(--surface); display: flex; flex-direction: column; overflow: hidden; }
+  .cr-list-head { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-3); }
+  .cr-list-head .ttl { font-weight: 600; flex: 1; }
+  .cr-tabs { display: flex; gap: var(--sp-4); padding: 0 var(--sp-3); border-bottom: 1px solid var(--border); }
+  .cr-tab { font-size: var(--fs-table); color: var(--muted); padding: var(--sp-2) 0 var(--sp-3); white-space: nowrap; }
+  .cr-tab.active { color: var(--text); font-weight: 600; box-shadow: inset 0 -2px 0 var(--text); }
+  .cr-tab .n { margin-left: 4px; color: var(--text-faint); }
+  .cr-search { margin: var(--sp-3); height: var(--control-h-compact); border: 1px solid var(--border);
+    border-radius: var(--radius-control); background: var(--surface); display: flex; align-items: center;
+    gap: var(--sp-2); padding: 0 var(--sp-2); color: var(--muted); font-size: var(--fs-table); }
+  .cr-rows { flex: 1; overflow: hidden; }
+  .cr-row { padding: var(--sp-3); border-bottom: 1px solid var(--border); display: flex; flex-direction: column;
+    gap: 6px; border-left: 2px solid transparent; }
+  .cr-row.selected { background: var(--env-tint); border-left-color: var(--env); }
+  .cr-row .cr-top { display: flex; align-items: center; gap: var(--sp-2); }
+  .cr-row .cr-num { font-family: var(--font-mono); font-size: var(--fs-meta); color: var(--muted); }
+  .cr-row .cr-top .badge { margin-left: auto; }
+  .cr-row .cr-title { font-size: var(--fs-table); font-weight: 600; line-height: 1.35; color: var(--text); }
+  .cr-row .cr-meta { display: flex; align-items: center; gap: 6px; font-size: var(--fs-meta); color: var(--muted); }
+  .cr-row .cr-meta .tgt { display: inline-flex; align-items: center; gap: 4px; }
+  .cr-row .cr-meta .tdot { width: 7px; height: 7px; border-radius: var(--radius-pill); }
+
+  /* center detail */
+  .cr-detail { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--surface); }
+  .cr-title-block { padding: var(--sp-4) var(--sp-6) var(--sp-3); border-bottom: 1px solid var(--border); }
+  .cr-h1 { font-size: var(--fs-h1); font-weight: var(--fw-h1); line-height: var(--lh-h1); display: flex;
+    align-items: baseline; gap: var(--sp-2); }
+  .cr-h1 .num { font-family: var(--font-mono); font-size: var(--fs-body); color: var(--muted); }
+  .cr-subline { display: flex; align-items: center; gap: var(--sp-3); margin-top: var(--sp-2);
+    font-size: var(--fs-table); color: var(--muted); }
+  .cr-subline .tgt { display: inline-flex; align-items: center; gap: 5px; }
+  .cr-subline .tgt .tdot { width: 8px; height: 8px; border-radius: var(--radius-pill); background: var(--env); }
+  .cr-subline .add-rev { color: var(--blue); font-weight: 600; }
+  .cr-detail-tabs { display: flex; gap: var(--sp-5); padding: var(--sp-3) var(--sp-6) 0; border-bottom: 1px solid var(--border); }
+  .cr-dtab { font-size: var(--fs-table); color: var(--muted); padding-bottom: var(--sp-3); }
+  .cr-dtab.active { color: var(--text); font-weight: 600; box-shadow: inset 0 -2px 0 var(--text); }
+  .cr-dtab .n { margin-left: 4px; color: var(--text-faint); }
+  .cr-detail-body { flex: 1; overflow: hidden; padding: var(--sp-5) var(--sp-6); }
+  .cr-sec { margin-bottom: var(--sp-5); }
+  .cr-sec .sh { display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-2); }
+  .cr-sec .regen { margin-left: auto; color: var(--blue); font-size: var(--fs-meta); font-weight: 600; }
+  .cr-sec .ai-tag { color: var(--blue); font-size: var(--fs-meta); font-weight: 600; }
+  .cr-prose { font-size: var(--fs-body); line-height: 1.55; }
+  .diff-box { border: 1px solid var(--border); border-radius: var(--radius-card); overflow: hidden; }
+</style>
+</head>
+<body>
+<div class="frame" data-env="dev">
+
+  <!-- ZONE 1 — Top bar -->
+  <header class="topbar">
+    <span class="wordmark"><span class="dot">●</span> studio</span>
+    <div class="search-field"><span>🔍</span><span>Search apps, workflows, records, CRs</span><span class="kbd">⌘K</span></div>
+    <span class="icon-btn">🔔<span class="bell-badge">3</span></span>
+    <span class="avatar">CH</span>
+  </header>
+
+  <!-- ZONE 2 — Pipeline bar -->
+  <div class="pipeline-bar">
+    <span class="env-pill">
+      <span class="env-dot"></span> Development <span class="sep">·</span> Testing Ch
+      <span class="caret">▾</span> <span class="lock">🔒 CH</span>
+    </span>
+    <div class="center pipeline-stepper">
+      <span class="pl-node current"><span class="nd"></span> Dev <span class="pl-count">46</span></span>
+      <span class="pl-conn"></span>
+      <span class="pl-node downstream"><span class="nd"></span> QA</span>
+      <span class="pl-conn"></span>
+      <span class="pl-node downstream"><span class="nd"></span> Pre-Live</span>
+      <span class="pl-conn"></span>
+      <span class="pl-node downstream"><span class="nd"></span> Live</span>
+    </div>
+    <div class="right">
+      <button class="btn btn-env sm">Review Pending ▾</button>
+      <button class="btn btn-env sm">Merge &amp; Deploy ▾</button>
+      <button class="btn sm">Close</button>
+    </div>
+  </div>
+
+  <div class="work-row">
+
+    <!-- LEFT — CR list master -->
+    <nav class="cr-list">
+      <div class="cr-list-head">
+        <span class="ttl">Change Requests</span>
+        <button class="btn btn-primary sm">+ New CR</button>
+      </div>
+      <div class="cr-tabs">
+        <span class="cr-tab active">Review requested <span class="n">3</span></span>
+        <span class="cr-tab">Created by me <span class="n">2</span></span>
+        <span class="cr-tab">All <span class="n">9</span></span>
+      </div>
+      <div class="cr-search"><span>🔍</span> Search change requests</div>
+
+      <div class="cr-rows">
+        <!-- selected -->
+        <div class="cr-row selected">
+          <div class="cr-top"><span class="cr-num">#461</span><span class="badge needs-review">Needs Review</span></div>
+          <div class="cr-title">Add Update Engagement Copy workflow and update record types</div>
+          <div class="cr-meta">
+            <span class="avatar sm green">RV</span> Rajat Vijay
+            <span>·</span><span class="tgt"><span class="tdot" style="background:var(--env-dev)"></span>Development</span>
+            <span>· 💬 0</span>
+          </div>
+        </div>
+
+        <div class="cr-row">
+          <div class="cr-top"><span class="cr-num">#614</span><span class="badge needs-review">Needs Review</span></div>
+          <div class="cr-title">Fix External Party validation on Tax ID / EIN</div>
+          <div class="cr-meta">
+            <span class="avatar sm">CH</span> Chris Calviño
+            <span>·</span><span class="tgt"><span class="tdot" style="background:var(--env-qa)"></span>QA</span>
+            <span>· 💬 2</span>
+          </div>
+        </div>
+
+        <div class="cr-row">
+          <div class="cr-top"><span class="cr-num">#507</span><span class="badge approved">Approved</span></div>
+          <div class="cr-title">Add Risk Questionnaire branching to Subcontractor Form</div>
+          <div class="cr-meta">
+            <span class="avatar sm amber">MK</span> Maya Koch
+            <span>·</span><span class="tgt"><span class="tdot" style="background:var(--env-dev)"></span>Development</span>
+            <span>· 💬 4</span>
+          </div>
+        </div>
+
+        <div class="cr-row">
+          <div class="cr-top"><span class="cr-num">#485</span><span class="badge approved">Approved</span></div>
+          <div class="cr-title">Promote Development → QA (Testing Ch)</div>
+          <div class="cr-meta">
+            <span class="avatar sm green">RV</span> Rajat Vijay
+            <span>·</span><span class="tgt"><span class="tdot" style="background:var(--env-qa)"></span>QA</span>
+            <span>· 💬 1</span>
+          </div>
+        </div>
+
+        <div class="cr-row">
+          <div class="cr-top"><span class="cr-num">#630</span><span class="badge needs-review">Needs Review</span></div>
+          <div class="cr-title">Update Monitoring record attributes</div>
+          <div class="cr-meta">
+            <span class="avatar sm gray">JD</span> Jordan Diaz
+            <span>·</span><span class="tgt"><span class="tdot" style="background:var(--env-dev)"></span>Development</span>
+            <span>· 💬 0</span>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- CENTER — CR #461 detail -->
+    <div class="cr-detail">
+      <!-- breadcrumb + actions -->
+      <div class="canvas-head">
+        <div class="breadcrumb">
+          <span class="crumb">Mayo Client App</span><span class="sep">›</span>
+          <span class="crumb">Change Requests</span><span class="sep">›</span>
+          <span class="crumb current">#461</span>
+        </div>
+        <div class="right">
+          <button class="btn sm">Request changes</button>
+          <button class="btn sm" style="background:var(--green);border-color:var(--green);color:#fff">Approve</button>
+          <span class="muted">⋮</span>
+        </div>
+      </div>
+
+      <!-- title block -->
+      <div class="cr-title-block">
+        <div class="cr-h1">
+          <span class="num">#461</span>
+          Add Update Engagement Copy workflow and update record types
+          <span class="badge needs-review" style="margin-left:var(--sp-2)">Needs Review</span>
+        </div>
+        <div class="cr-subline">
+          <span><span class="avatar sm green">RV</span> Rajat Vijay opened</span>
+          <span>into <span class="tgt"><span class="tdot"></span> Development · Testing Ch</span></span>
+          <span>· 5 changes</span>
+          <span>· No reviewers yet <span class="add-rev">+ Add reviewer</span></span>
+        </div>
+      </div>
+
+      <!-- detail tabs -->
+      <div class="cr-detail-tabs">
+        <span class="cr-dtab active">Overview</span>
+        <span class="cr-dtab">Changes <span class="n">5</span></span>
+        <span class="cr-dtab">Comments <span class="n">0</span></span>
+      </div>
+
+      <!-- Overview body -->
+      <div class="cr-detail-body">
+        <!-- Summary -->
+        <div class="cr-sec">
+          <div class="sh">
+            <span class="section-label">Summary</span>
+            <span class="ai-tag">✦ AI-drafted</span>
+            <span class="regen">↻ Regenerate</span>
+          </div>
+          <div class="cr-prose">
+            Introduces a new <b>Update Engagement Copy</b> workflow that refreshes denormalized engagement
+            fields on related records, and adjusts the <b>Engagement</b> and <b>Contracts Engagement</b>
+            record types to add the supporting attributes the workflow writes to.
+          </div>
+        </div>
+
+        <!-- Changes -->
+        <div class="cr-sec">
+          <div class="sh"><span class="section-label">Changes · 5</span></div>
+          <div class="diff-box">
+            <div class="diff-group">Workflows <span class="gcount">1</span></div>
+            <div class="diff-row"><span class="chg add">+</span><span class="tw">⊞</span><span class="name">Update Engagement Copy</span><span class="lref">new</span></div>
+
+            <div class="diff-group">Records <span class="gcount">2</span></div>
+            <div class="diff-row"><span class="chg modify">~</span><span class="tw">▤</span><span class="name">Engagement · +2 attributes (Status, Risk Tier)</span><span class="lref">L41</span></div>
+            <div class="diff-row"><span class="chg modify">~</span><span class="tw">▤</span><span class="name">Contracts Engagement · +1 attribute</span><span class="lref">L18</span></div>
+
+            <div class="diff-group">App Settings <span class="gcount">2</span></div>
+            <div class="diff-row"><span class="chg modify">~</span><span class="tw">⚒</span><span class="name">Record Types · Engagement mapping</span><span class="lref">L7</span></div>
+            <div class="diff-row"><span class="chg modify">~</span><span class="tw">⚒</span><span class="name">Engagement detail layout</span><span class="lref">L23</span></div>
+          </div>
+        </div>
+
+        <!-- Impact -->
+        <div class="cr-sec">
+          <div class="sh">
+            <span class="section-label">Impact</span>
+            <span class="ai-tag">✦ AI-drafted</span>
+            <span class="regen">↻ Regenerate</span>
+          </div>
+          <div class="cr-prose">
+            <b>Engagement</b> is referenced by 6 workflows and 32 attributes. The two new attributes are
+            additive, but the record-type mapping change affects how the <i>Status</i> field is read by
+            <b>3 in-progress drafts</b>. Merging with <b>“update in-progress workflows”</b> will re-run
+            those 3; choosing <b>“ignore”</b> leaves them on the prior mapping. No Live-tier objects are touched.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT — persistent AI panel -->
+    <aside class="ai-panel">
+      <div class="aip-head">
+        <span class="aip-title"><span class="spark">✦</span> Studio AI</span>
+        <span class="ctx-chip" style="margin-left:auto">⤳ CR #461 <span class="x">×</span></span>
+      </div>
+      <div class="aip-stream">
+        <div class="aip-suggest">
+          <span class="lead">Suggestion</span>
+          This CR changes the <b>Engagement</b> record type, which 6 workflows read from. Want me to check whether any of the 3 in-progress drafts would break before you approve?
+        </div>
+        <div class="aip-msg user">What's the blast radius of the record-type change?</div>
+        <div class="aip-thought">Tracing references from Engagement across this draft…</div>
+        <div class="aip-msg">The mapping change touches <b>Status</b> and <b>Risk Tier</b>. <b>Status</b> is read by 6 workflows and referenced by 3 in-progress drafts; <b>Risk Tier</b> is new, so no existing reads. Highest-risk consumer is <b>Vendor Risk Review</b>, which branches on Status.</div>
+      </div>
+      <div class="aip-input">
+        <span class="aip-field">Ask about this…</span>
+        <span class="aip-send">↑</span>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ZONE 7 — Status bar (full width) -->
+  <div class="status-bar">
+    <span class="sdot"><span class="d"></span> Development</span>
+    <span>changes 5</span>
+    <span style="color:var(--red)">errors 1</span>
+    <span style="color:var(--amber)">warnings 1</span>
+    <span class="right"><span class="kbd">⌘K</span> to navigate</span>
+  </div>
+</div>
+</body>
+</html>
