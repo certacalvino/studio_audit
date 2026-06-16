@@ -1,13 +1,15 @@
 # A. Current State Map — Certa Studio Navigation Model
 
-> Structured outline of the navigation model as it exists today.
+> Structured outline of the navigation model as it exists today, verified against live screenshots
+> (App List, Mayo Client App, Subcontractor Form Preview/Rules/JSON, Records, CR #461 Overview+Changes,
+> Env/Draft switcher, AI Plan mode, App Overrides, App Settings).
 > 🔴 = model breaks (dead end / context loss) · 🟠 = friction (re-orientation cost) · 🟡 = latent risk
-> Anchors reference real screens: *Mayo Client App*, *Subcontractor Form*, *CR #461*.
+> ✅ = existing pattern worth crediting / extending (per "extend existing patterns first" constraint)
 
 ---
 
 ## 0. Mental model in one line
-Studio behaves like **a web browser nested inside a web app**: a horizontal tab strip at the top owns navigation, a permanent AI chat owns the left rail, and everything else is reached by returning to an "Open existing" home screen. There is **no persistent structural navigation** (no tree, no breadcrumb, no back/forward that respects app hierarchy).
+Studio behaves like **a web browser nested inside a web app**: a horizontal tab strip owns navigation, an AI panel owns the left rail, and everything else is reached by returning to a per-app "Open existing" home. There is **no persistent, cross-context structural navigator** — except, tellingly, *inside* App Settings and App Overrides, which already use a persistent left sub-nav (✅ in-product precedent for the redesign in Section D).
 
 ---
 
@@ -15,164 +17,168 @@ Studio behaves like **a web browser nested inside a web app**: a horizontal tab 
 
 ```
 Studio Shell
-├── Left rail (fixed, full height)
-│   └── AI Chat sidebar  ............................. always visible, every screen
-│       ├── "New chat" header
-│       ├── Input: "Ask about a workflow, field, or rule…"
-│       └── [Plan] toggle + send
-│       🔴 Occupies permanent primary-nav real estate but provides NO navigation
-│       🟠 Contextually disconnected — does not know which workflow/record is open on the right
+├── Left rail (fixed, full height) — AI PANEL  ......... present on every screen
+│   ├── Header: "New chat" ⇄ "New plan"  (toggles with Plan mode)
+│   ├── ✅ Context-aware: shows a chip of the open object — e.g. [⤳ Subcontractor Form]
+│   ├── ✅ Agentic: creates "Checkpoint created · Revert", shows "Thought & Worked · 1 step · 8.25s"
+│   ├── [Plan] toggle (bottom) — switches chat→plan; send button becomes a ⊘ state
+│   └── Input: "Ask about a workflow, field, or rule…" + 📎 attach
+│   🔴 Powerful agent hidden behind a narrow rail that also blocks the prime nav region
+│   🟠 Plan mode is unexplained/undiscoverable; no history, no suggested prompts/actions
 │
-├── Top bar (fixed)
-│   ├── Environment switcher  [Development ▾]  ........ 4 tiers: Dev / QA / Pre-Live / Live
-│   │   🟡 Risk tier (Live) communicated only by a small green dot — weak signal
-│   ├── Draft picker  [Testing Ch ▾]  ................. current working draft/branch
-│   │   🟠 Naming ("Testing Ch") is freeform/cryptic; no clear relation to environments
-│   ├── ▶ Play button
-│   ├── ⑂ Fork / Change Requests icon
-│   ├── [Create Change Request] CTA
-│   └── ⋮ kebab menu
-│   🟠 6 unrelated controls share one bar with no grouping or action hierarchy
+├── Top bar (CONTEXTUAL — differs by location)
+│   ├── On App List:   `studio | App list ……………………………… CH`   (minimal; NO env switcher)
+│   └── Inside an App:  Env+Draft switcher · ☁ · ▶ Play · ⑂ · [Create Change Request] · ⋮
+│       🟠 6 ungrouped controls, no action hierarchy
+│       🟡 Risk of operating in Live signalled only by a small green dot
+│       🔴 Environment context is absent at App-List level but dominant inside an app
 │
-├── Tab strip (fixed, horizontal)
-│   └── [ Subcontractor Form | Rules | JSON | + New Tab ]
-│       🔴 Flat tab list — no indication these tabs belong to ONE workflow inside ONE app
-│       🔴 No overflow handling defined for 8+ tabs (see §3)
-│       🟠 "Rules" / "JSON" are *views of the same object* but look like sibling destinations
+├── Tab strip (horizontal, accumulating)
+│   ├── Mixes object tabs + view tabs + app-destination tabs in one flat row
+│   ├── 🔴 No de-duplication — observed two identical "Change Requests" tabs open at once
+│   ├── 🔴 Conflated semantics: a workflow tab, its Preview/Rules/JSON tabs, and app-level
+│   │       tabs (App Overrides, Configs, App Settings) all look like siblings
+│   ├── 🟡 Identity inconsistency: workflow tab = friendly name ("Subcontractor Form");
+│   │       record tab = raw TAG ("supplier_tCEpXz")
+│   └── 🔴 Overflow strategy at 8+ tabs undefined; no saved/unsaved cue on tabs
 │
 └── Main canvas (everything else renders here)
 ```
 
 ---
 
-## 2. App-level navigation
+## 2. App-level navigation & information architecture
 
 ```
-App List  (453 apps)
-│   🔴 Flat list — no search, filter, folders, grouping, or favorites in main view
-│   🟠 At 453 items, locating "Mayo Client App" is pure scroll/scan
+App List  (Apps 453)  — route /studio/apps
+│   🔴 Flat list, no search / filter / folders / sort / favorites
+│   🔴 No archive/cleanup → list polluted with junk: test m1–m14, studio-2335 + STUDIO-2335
+│       (case-dup), Sandbox_Test_QA_2, "check revert", a workflow literally named "New"
+│   ✅ Row hover-reveals inline actions (✏️ edit / 🗑️ delete / ↗ open)
 │
-└── Mayo Client App  (selected)
-    │   🔴 No breadcrumb or header anchor confirming "you are inside Mayo Client App"
+└── Mayo Client App  →  "Open existing" panel (de-facto app home)
+    │   🔴 No breadcrumb / header anchor persists once you drill in
+    │   ✅ App-level actions exist top-right: [Flow view] [Overrides] [Settings]
+    │   🟠 Single long scroll with labeled sections but NO sticky/jump nav between them:
     │
-    └── "Open existing" panel  ........................ the de-facto app home
-        │   🟠 Flat scroll mixing different object classes (workflows + records + configs)
-        │   🟡 Workflow vs Record differentiated only by icon, not grouped by section
-        │
-        ├── Workflows  (icon-tagged, not section-grouped)
-        │   ├── Subcontractor Form
-        │   ├── OIS Device Details
-        │   ├── OIS Manufacturer & Firmware
-        │   ├── Device Scoping Details
-        │   ├── External Party Onboarding
-        │   ├── Initiate Engagement
-        │   ├── Escalation
-        │   ├── Initiate Tasks
-        │   ├── Update Engagement
-        │   ├── Initiate Contract
-        │   ├── TAP Release
-        │   ├── Risk Remediation
-        │   ├── Off-Hold / On-Hold Engagement
-        │   ├── Offboarding Data / Annual Attestation
-        │   ├── Initiate Offboarding / Monitoring
-        │   ├── Offshore Work Form
-        │   └── …others
-        ├── Records  (6 types)
-        │   ├── External Party
-        │   ├── Contracts External Party
-        │   ├── Mayo Internal Party
-        │   ├── Engagement
-        │   ├── Monitoring
-        │   └── Contracts Engagement
-        │       🟠 67+ attributes each, no visible grouping/sectioning of attributes
-        ├── Scheduled Actions
-        ├── Badges
-        ├── Workflow Prepopulation Configs
-        ├── Step Copy Configurations
-        └── Object Selection Configs
-            🔴 Configs share the flat scroll with workflows/records — no IA separation
+    ├── Workflows  (each row: icon · name · "workflow" tag · [Preview][Rules][JSON])
+    │     Subcontractor Form, OIS Device Details, OIS Manufacturer & Firmware,
+    │     Device Scoping Details, Initiate Engagement (Internal/External), Other Queries,
+    │     External Party Onboarding, Device/Service/Tool Details, Computer Scoping Details,
+    │     Architecture Ports & Protocols, Escalation, Initiate Tasks, Update Engagement,
+    │     Initiate Contract (×2), Initiate TAP Release, Risk Remediation, On/Off-Hold
+    │     Engagement, Offboarding Data/Annual Attestation, Initiate Offboarding/Monitoring,
+    │     Offshore Work Form, New …
+    │   🔴 No lateral workflow→workflow nav (must return here & re-select)
+    │
+    ├── Records  ([Preview][JSON] only — NO Rules)  → "Flow view" opens a clean table
+    │     ✅ Records table: NAME | TAG | ATTRIBUTES + Columns + Add record + row actions
+    │     • External Party (supplier_tCEpXz) — 67 attrs
+    │     • Engagement (engagement_UNWCkwrxTF) — 32
+    │     • Contracts External Party — 10 · Mayo Internal Party — 9
+    │     • Contracts Engagement — 7 · Monitoring — 2
+    │     ✅ Attribute editor is a typed table: NAME | TYPE | REQUIRED | INDEXED + 🔒 system + Σ
+    │     🟠 No attribute grouping/sections within a record (flat, even at 67 rows)
+    │
+    ├── Scheduled Actions → "All Scheduled Actions"
+    ├── Badges → "All Badges"
+    ├── Workflow Prepopulation Configs → "All …"
+    ├── Step Copy Configurations → "All …"
+    └── Object Selection Configs → "All …"
+
+App-level destinations (separate tabs, reached from the app header):
+├── Flow view (app-level)           — workflow graph (per app header link)
+├── App Overrides  ✅ persistent left sub-nav: Notification templates / Integration configs /
+│     Integration tokens — scoped to QA | Pre-Live | Live (environment-specific overrides)
+│     🟡 First-class part of the multi-env model, but buried behind a header link
+└── App Settings  ✅ PERSISTENT LEFT VERTICAL SUB-NAV (~18 sections):
+      Business Units · Regions · Roles · Adjudication Options · Role Group Configs ·
+      Workflow Kind Policies · Config Translations · Record Statuses · Workflow Statuses ·
+      Comment Flag Options · Email Attachments · Email Templates · Pre-defined Options ·
+      Integration Tokens · Context Templates · Integration Configs · User Groups · Indicator Rules
+      ✅ Each section = searchable table (In-App / All counts, sort, Add) — strong pattern
+      ➡️ This sidebar is the IN-PRODUCT PRECEDENT for the persistent navigator proposed in §D
 ```
 
-**Critical break:** To move from *Subcontractor Form* to *Initiate Engagement*, the user must abandon the current tab context, return to "Open existing," scroll/scan, and re-select. 🔴 **There is no workflow-to-workflow lateral navigation.**
+**Critical break:** workflow↔workflow and section↔section navigation both require returning to "Open existing"; the rich App Settings/Overrides surfaces are only reachable via small header links and then live in throwaway tabs.
 
 ---
 
-## 3. Tab interaction model (what triggers / replaces / opens inline)
+## 3. Tab interaction model
 
 ```
-Trigger                              → Result
-────────────────────────────────────────────────────────────────
-Select workflow from "Open existing" → opens workflow as a TAB (e.g. "Subcontractor Form")
-Open Rules view                      → opens "Rules" as a SIBLING tab (same object, new tab)
-Open JSON view                       → opens "JSON" as a SIBLING tab (same object, new tab)
-Open builder                         → renders "Preview" tab alongside name + JSON tabs
-"+ New Tab"                          → blank tab → routes back to "Open existing" home
-Switch workflow                      → NO inline path; must use "Open existing" again
+Trigger                                  → Result
+──────────────────────────────────────────────────────────────────────────
+Select workflow in "Open existing"       → workflow opens; launching Preview/Rules/JSON
+                                            each spawns a SIBLING tab (name + view tabs)
+Open a record                            → tab named by TAG (supplier_tCEpXz) + Preview tab
+App header → Overrides / Settings / Flow → opens as its own top-level tab
+Open a Change Request                    → "Change Request #461" tab (no dedup → can duplicate)
+"+ New Tab"                              → routes back to "Open existing" home
+Switch workflow                          → NO inline path; via "Open existing" again
 ```
-
-🔴 **Conflated semantics:** tabs represent *both* distinct objects (a workflow) *and* views of one object (Rules/JSON/Preview). The user cannot tell from the tab strip what is an object vs a lens on that object.
-🔴 **Overflow undefined:** behavior at 8+ tabs (scroll, collapse, dropdown?) is not specified — likely horizontal crowding.
-🟠 **No tab persistence cues:** unsaved JSON vs saved state not surfaced on the tab itself.
+🔴 Tabs represent objects, views-of-an-object, AND app destinations indistinguishably.
+🔴 No dedup, no overflow handling, no dirty-state indicator.
 
 ---
 
-## 4. Workflow Builder internal navigation
+## 4. Workflow Builder — three views of one object
 
 ```
 Workflow (e.g. Subcontractor Form)
-├── Tab: [Subcontractor Form]  (name/overview)
-├── Tab: [Preview]   ............................. builder canvas
-│   ├── Left:  RECORD DETAILS panel  + collapse arrow
-│   ├── Center: TASKS swimlane area
-│   │   └── Empty state: "No tasks configured + Add Swimlane"
-│   │       🟠 Empty state affordance unclear — "Swimlane" jargon, weak guidance
-│   ├── Step list (left)
-│   │   └── Subcontractor Form > Subcontractor Details > Untitled Step
-│   │       🟡 "Untitled Step" — no forced naming → orphaned/ambiguous steps
-│   └── Right: Form preview (labels, inputs, radios, dropdowns, submit)
-│       🔴 Unclear if Preview is ever editable or always read-only — no live-edit affordance
-│       🔴 Field-level ops (reorder / duplicate / conditional show) not visible in UI
-└── Tab: [JSON]  ................................ raw editor
-    ├── Line numbers + Save button
-    ├── 🔴 red dot = 1 error · 🟠 orange dot = 1 warning  (counts only, no jump-to)
-    └── 🔴 No visual diff / change tracking inside the builder
+├── PREVIEW (builder canvas)
+│   ├── Left: RECORD DETAILS (+ Link record) · TASKS (+ Add Swimlane) · collapse arrow
+│   ├── Step list:  Subcontractor Form ▸ Subcontractor Details ▸ Untitled Step  (+ Add Step)
+│   │     🟡 "Untitled Step" — unnamed steps persist; no forced naming
+│   ├── Right: full-fidelity form render (header, info alert, inputs, radios, dropdowns, Submit)
+│   │     🔴 Edit affordances at field level (reorder/duplicate/conditional) not visible
+│   └── Empty state: "No tasks configured + Add Swimlane"  🟠 jargon, weak guidance
+│
+├── RULES (WHEN/DO automations)
+│   ├── ✅ "… Rules" + Add New Rule + Search + Filters + list/graph toggle
+│   ├── Rule card: WHEN [Submit Step][Subcontractor Details] → DO [Update Workflow V2]
+│   └── 🟡 Rule names machine-generated (set_name_and_complete_on_submit_254d00bb)
+│
+└── JSON (source of truth)
+    ├── "Workflow JSON" + ● 1 error + ● 1 warning + Save + expand
+    ├── Tags are machine hashes (subcontractor_form_dfb1fe11, request_for_approval_header_a6abcea0)
+    └── 🔴 Errors/warnings = COUNT badges + inline squiggles only — no jump-to, no in-builder diff
 ```
-
-**Context-switch cost:** Editing a field's logic means leaving the visual Preview tab and switching to the JSON tab — a full context swap with no side-by-side, no two-way sync cue, and no indication of *where* in the JSON the field lives. 🟠🟠
+🟠🟠 Preview ↔ JSON is a full tab swap: no side-by-side, no two-way sync cue, no "where is this field in the JSON".
 
 ---
 
 ## 5. Records navigation
-
-```
-Records (within Mayo Client App)
-└── [Record type]  → opens as a tab (same flat tab model as workflows)
-    └── 67+ attributes
-        🔴 No attribute grouping, search, or sub-navigation within a record
-        🟠 Long flat scroll; same break as App List but at the attribute level
-```
+✅ Genuinely decent: Flow-view table → record detail = typed attribute table (TYPE/REQUIRED/INDEXED, 🔒 system attrs, Σ aggregate, Columns).
+🟠 No attribute grouping/sectioning even at 67 attributes (External Party); 🟡 tab named by tag not friendly name.
 
 ---
 
-## 6. Change Requests navigation
+## 6. Change Requests & branching model
 
 ```
-Top bar ⑂ icon → Change Requests
-├── Tabs: [All] [Needs Review] [Approved] [My Drafts] [Team Drafts]
-├── CR list rows
-│   └── CR #461 "Add Update Engagement Copy workflow and update record types"
-│       ├── author avatar (SP/YS/SH/HS/RV/SA/NE)
-│       ├── branch source → target (Development)
-│       ├── timestamp + status (Needs Review / Approved)
-│       ├── AI Summary  (prose)
-│       ├── Changes by entity (workflow / record type / status / kind settings)
-│       ├── Impact (Low Risk / Overview)
-│       └── "No reviewers yet"
-│           🔴 Approval model unclear — blocking or advisory? No checklist/required reviewers
-│           🔴 No inline/line-level diff — only prose summary
-│           🟠 Pipeline Draft→CR→Dev→QA→Pre-Live→Live is NOT visualized anywhere
-└── 🔴 CR system is globally entered from top bar, fully disconnected from the workflow
-    the user was just editing — opening a CR loses workflow context entirely
+Env + Draft switcher (single two-pane dropdown, top bar)
+├── ENVIRONMENTS: Development (46) | QA | Pre-Live | Live      ← tier + draft count
+└── DRAFTS: MY DRAFTS (Testing Ch ✓) · TEAM DRAFTS (author + "Xh ago") · + Create new draft · SWITCH →
+    🟡 Drafts default to TIMESTAMP names ("16 Jun 16:32:46"); 46 uncurated drafts in Development
+    ✅ Model is real: Environment → Draft(branch); promotion = a CR between tiers
+
+Change Requests (top-bar ⑂)
+├── Sub-tabs: Review requested · Created by me · All   ✅ + Search by title + status filter (Open)
+├── List rows: avatar · title · #id · source → target · status badge · timestamp
+│     #485  Development → QA · Approved          ← ✅ tier-to-tier PROMOTION is a CR
+│     #461  04 Jun 01:12:06 → Development · Needs Review
+│     #477  "No changes detected in the branch diff"  🔴 empty CRs are allowed
+│     #613/#424/#421/#416  "Untitled change request"  🟡 naming hygiene (mirrors drafts)
+└── CR detail (#461)
+    ├── Header ✅ GitHub-like: "RV wants to merge … → Development · opened … · No reviewers yet"
+    ├── OVERVIEW  ✅ AI summary: Summary · Changes-by-entity · Impact (Low Risk)
+    │     🟠 references entities by raw TAG (supplier_tCEpXz) — opaque to non-technical admins
+    └── CHANGES  ✅ real navigable diff:
+          • entity tree WORKFLOWS 3 / RECORDS 2 / APP SETTINGS 2, expandable to field/line (L68)
+          • +/~ markers, two-pane line-numbered JSON diff (Development vs draft), READ-ONLY
+          🔴 diff is RAW JSON only — no semantic/visual diff (can't be read by non-engineers)
+          🔴 no inline line-level comments; no review checklist / required reviewers (advisory only)
 ```
 
 ---
@@ -180,27 +186,34 @@ Top bar ⑂ icon → Change Requests
 ## 7. Consolidated friction inventory
 
 ### 🔴 Dead ends / context loss
-1. Workflow↔workflow switching forces a return to "Open existing" (no lateral nav).
-2. No breadcrumb — App > Workflow > Step hierarchy is never displayed.
-3. Tab strip conflates objects and views; no overflow strategy.
-4. Entering Change Requests abandons workflow context.
-5. JSON editor errors/warnings are counts only, with no jump-to and no diff.
-6. App List (453) has no search/filter/grouping.
+1. No lateral workflow↔workflow (or section↔section) nav — always via "Open existing".
+2. No persistent breadcrumb; App > Workflow > Step hierarchy never shown once drilled in.
+3. App List (453): no search/filter/folders/archive → junk-polluted.
+4. Tab strip conflates objects/views/app-destinations; no dedup; no overflow strategy.
+5. JSON errors/warnings: counts only, no jump-to; no in-builder diff.
+6. CR diff is raw JSON; no inline comments; no required-reviewer/approval gate.
 
-### 🟠 Context-switch / re-orientation costs
-7. Preview ↔ JSON is a full tab swap, no side-by-side, no sync cue.
-8. AI sidebar is permanently present yet context-blind.
-9. Top bar packs 6 ungrouped controls with no action hierarchy.
-10. Draft naming ("Testing Ch") is cryptic and decoupled from environments.
-11. Records expose 67+ flat attributes with no grouping.
-12. "Add Swimlane" empty state uses unexplained jargon.
+### 🟠 Re-orientation / cognitive costs
+7. Preview↔JSON is a full tab swap (no side-by-side/sync).
+8. AI agent capability buried in a narrow rail; Plan mode unexplained; no history/suggestions.
+9. Top bar packs 6 ungrouped controls.
+10. App Overrides / App Settings (env-critical) hidden behind small header links → throwaway tabs.
+11. Records: 67 flat attributes, no grouping.
+12. "Add Swimlane" empty-state jargon.
 
 ### 🟡 Latent risks
-13. Live vs Development distinguished only by a small green dot — weak risk signal.
-14. "Untitled Step" allows unnamed, ambiguous steps to persist.
-15. Branching pipeline (Dev→QA→Pre-Live→Live) is never visualized.
+13. Live vs Development distinguished only by a small green dot.
+14. Naming hygiene: timestamp-named drafts (46 in Dev), "Untitled change request", "Untitled Step", machine-tag rule/field names surfaced to humans.
+15. Empty CRs permitted (#477).
+
+### ✅ Existing strengths to extend (not replace)
+- Persistent left sub-nav already used in App Settings & App Overrides → precedent for §D navigator.
+- Real entity-tree diff + GitHub-style CR header.
+- AI is context-aware + agentic with checkpoints/revert.
+- Records/attribute/settings tables (typed, searchable, sortable).
+- Rules WHEN/DO model with search/filter/graph toggle.
 
 ---
 
 ## 8. Summary judgment
-The current model optimizes for **single-object focus** (open one thing, edit it deeply) at the direct expense of **structural orientation** (knowing where you are) and **lateral movement** (getting to the next thing). The browser-tab metaphor borrows browser *mechanics* without browser *affordances* (no address bar / URL, no reliable back, no history). The AI sidebar consumes the exact screen region a structural navigator should occupy.
+Studio optimizes **single-object deep focus** at the expense of **structural orientation** and **lateral movement**. It borrows browser *mechanics* (tabs) without browser *affordances* (address bar/stable URL, reliable back, history, dedup). The paradox: the product **already contains** the building blocks of a better model — a persistent left sub-nav (Settings/Overrides), a real diff, an agentic context-aware AI, and clean typed tables — but these are siloed behind header links and throwaway tabs while the prime left rail is spent on a chat panel. The redesign opportunity (Section D) is therefore mostly **re-composition of existing patterns**, not net-new invention.
