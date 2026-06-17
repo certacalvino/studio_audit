@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Studio — Flow 1 Prototype</title>
+<style>
+  /* ---- Palette (grayscale shell, env dots only) ---- */
+  :root{
+    --bg:#F5F5F5; --sf:#FFFFFF; --bdr:#E0E0E0; --tx:#333333; --mu:#999999; --hd:#1A1A1A;
+    --fl:#E0E0E0; --sel:#EFEFEF; --grp:#EDEDED; --mute:#FAFAFA; --ub:#E8E8E8; --ut:#555555;
+    --dev:#00164E; --qa:#D97706; --pre:#0D9488; --live:#16A34A;
+    --am-bg:#FBEEDB; --am-bd:#E9CB8F; --am-tx:#92600A; --am-ac:#D97706;
+    /* Linear type scale */
+    --t-title:14px; --t-head:12px; --t-body:11px; --t-label:10px; --t-ai:12px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{
+    font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:#D9DBDE; color:var(--tx); font-size:var(--t-body); -webkit-font-smoothing:antialiased;
+  }
+  #app{height:100vh;}
+  .frame{display:flex;flex-direction:column;height:100vh;background:var(--bg);overflow:hidden;}
+
+  /* ---- Top bar ---- */
+  .topbar{height:48px;flex:0 0 48px;display:flex;align-items:center;gap:12px;padding:0 16px;background:var(--sf);border-bottom:1px solid var(--bdr);}
+  .wordmark{font-size:var(--t-title);font-weight:600;color:var(--hd);}
+  .spacer{flex:1;}
+  .avatar{width:28px;height:28px;border-radius:50%;background:var(--fl);}
+
+  /* ---- Pipeline bar ---- */
+  .pipeline{height:40px;flex:0 0 40px;display:flex;align-items:center;gap:14px;padding:0 16px;background:var(--sf);border-bottom:1px solid var(--bdr);}
+  .pill{display:flex;align-items:center;gap:7px;padding:4px 8px;border:1px solid var(--bdr);border-radius:6px;}
+  .pill .env-name{font-size:var(--t-body);font-weight:600;color:var(--hd);}
+  .pill .draft{font-size:var(--t-label);color:var(--mu);}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:0 0 8px;}
+  .dot.outline{background:transparent;border:1.5px solid var(--mu);}
+  .stepper{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .pnode{display:flex;align-items:center;gap:6px;font-size:var(--t-label);color:var(--mu);}
+  .pnode.cur{color:var(--hd);font-weight:600;}
+  .pnode.clickable{cursor:pointer;}
+  .pnode.clickable:hover{color:var(--hd);}
+  .pcount{background:var(--fl);border-radius:8px;padding:0 6px;font-size:var(--t-label);font-weight:500;color:var(--tx);}
+  .pconn{width:24px;height:2px;background:var(--bdr);}
+  .pbtn{height:26px;display:flex;align-items:center;padding:0 11px;border-radius:6px;font-size:var(--t-label);font-weight:500;}
+  .pbtn.ghost{border:1px solid var(--bdr);color:var(--tx);background:var(--sf);}
+  .pbtn.dark{background:var(--hd);color:var(--sf);}
+
+  /* ---- Banner (Live) ---- */
+  .banner{height:44px;flex:0 0 44px;display:flex;align-items:center;gap:10px;padding:0 16px;background:var(--am-bg);border-bottom:1px solid var(--am-bd);}
+  .banner .warn{color:var(--am-ac);font-size:var(--t-body);}
+  .banner .btxt{flex:1;color:var(--am-tx);font-size:var(--t-body);font-weight:600;}
+  .banner .bbtn{background:var(--am-ac);color:#fff;font-size:var(--t-label);font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;}
+
+  /* ---- Body ---- */
+  .bodyrow{flex:1;display:flex;min-height:0;}
+  .ai{width:300px;flex:0 0 300px;background:var(--sf);border-right:1px solid var(--bdr);display:flex;flex-direction:column;min-height:0;}
+  .main{flex:1;display:flex;flex-direction:column;min-width:0;}
+
+  /* ---- AI panel ---- */
+  .ai-head{height:48px;display:flex;align-items:center;gap:8px;padding:0 14px;border-bottom:1px solid var(--bdr);}
+  .ai-head .title{flex:1;font-size:var(--t-title);font-weight:600;color:var(--hd);}
+  .ai-head .col{color:var(--mu);}
+  .sparkle{color:var(--hd);}
+  .ai-stream{flex:1;overflow:auto;padding:12px 14px;display:flex;flex-direction:column;gap:12px;}
+  .hint{color:var(--mu);font-size:var(--t-ai);padding-top:8px;}
+  .ctx{display:flex;align-items:center;padding:5px 9px;background:var(--bg);border:1px solid var(--bdr);border-radius:12px;font-size:var(--t-label);font-weight:500;color:var(--tx);}
+  .sug{background:var(--bg);border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;}
+  .sug .lbl{display:flex;align-items:center;gap:6px;font-size:var(--t-label);font-weight:600;color:var(--mu);}
+  .sug .txt{font-size:var(--t-ai);color:var(--tx);line-height:1.4;}
+  .sug .acts{display:flex;gap:8px;align-items:center;}
+  .btn-dark{background:var(--hd);color:var(--sf);font-size:var(--t-label);font-weight:600;padding:6px 11px;border-radius:6px;cursor:pointer;}
+  .btn-ghost{font-size:var(--t-label);font-weight:500;color:var(--mu);padding:6px 8px;cursor:pointer;}
+  .bubble-user{align-self:flex-end;max-width:250px;background:var(--ub);color:var(--ut);border-radius:12px;padding:9px 12px;font-size:var(--t-ai);line-height:1.4;}
+  .bubble-ai{background:var(--bg);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;}
+  .bubble-ai .tw{display:flex;align-items:center;gap:5px;font-size:var(--t-label);color:var(--mu);}
+  .bubble-ai .txt{font-size:var(--t-ai);color:var(--tx);line-height:1.45;}
+  .editcard{display:flex;align-items:center;gap:7px;background:var(--sf);border:1px solid var(--bdr);border-radius:6px;padding:8px 10px;}
+  .editcard .et{flex:1;font-size:var(--t-label);font-weight:600;color:var(--hd);}
+  .editcard .rev{font-size:var(--t-label);color:var(--mu);}
+
+  /* composer */
+  .composer{border-top:1px solid var(--bdr);padding:10px 14px;display:flex;flex-direction:column;gap:10px;}
+  .taskcard{background:var(--bg);border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;}
+  .taskcard .trow{display:flex;align-items:center;gap:7px;}
+  .taskcard .ttl{flex:1;font-size:var(--t-head);font-weight:600;color:var(--hd);}
+  .taskcard .meta{display:flex;align-items:center;gap:6px;font-size:var(--t-label);color:var(--mu);}
+  .showall{background:var(--fl);border-radius:5px;padding:1px 6px;font-size:var(--t-label);font-weight:500;color:var(--tx);}
+  .tc-div{height:1px;background:var(--bdr);}
+  .diff{display:flex;flex-direction:column;gap:6px;}
+  .diffline{display:flex;align-items:center;gap:6px;}
+  .diffline .plus{font-size:var(--t-body);font-weight:600;color:var(--hd);}
+  .diffline .verb{font-size:var(--t-label);color:var(--mu);}
+  .entpill{background:var(--sf);border:1px solid var(--bdr);border-radius:5px;padding:1px 7px 2px;font-size:var(--t-label);font-weight:500;color:var(--tx);}
+  .inputbox{background:var(--sf);border:1px solid var(--bdr);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:10px;}
+  .inputbox .ph{font-size:var(--t-body);color:var(--mu);}
+  .inputbox .irow{display:flex;align-items:center;gap:8px;}
+  .inputbox .model{font-size:var(--t-label);color:var(--mu);}
+  .inputbox .plan{display:flex;align-items:center;gap:5px;border:1px solid var(--bdr);border-radius:11px;padding:5px 9px;font-size:var(--t-label);font-weight:500;color:var(--tx);}
+  .inputbox .send{width:28px;height:28px;border-radius:7px;background:var(--hd);color:var(--sf);display:flex;align-items:center;justify-content:center;font-size:12px;}
+
+  /* ---- Tab strip ---- */
+  .tabstrip{height:40px;flex:0 0 40px;display:flex;align-items:flex-end;padding:8px 0 0 10px;background:var(--bg);border-bottom:1px solid var(--bdr);gap:0;}
+  .tab{display:flex;align-items:center;gap:7px;padding:8px 10px 8px 12px;border-radius:6px 6px 0 0;font-size:var(--t-body);color:var(--mu);cursor:pointer;}
+  .tab .ic{font-size:var(--t-body);}
+  .tab.active{background:var(--sf);border:1px solid var(--bdr);border-bottom:none;color:var(--hd);font-weight:600;}
+  .tab .x{font-size:var(--t-label);color:var(--mu);margin-left:2px;}
+  .tab.group{background:var(--grp);color:var(--hd);font-weight:600;}
+  .conn{display:flex;align-items:flex-end;padding:0 3px 9px;color:var(--mu);font-size:var(--t-body);}
+  .newtab{padding:8px 10px;color:var(--mu);font-size:var(--t-title);cursor:pointer;}
+  .tab .sub{background:var(--fl);border-radius:4px;padding:1px 5px;font-size:var(--t-label);font-weight:500;color:var(--tx);}
+
+  /* ---- Sub-nav ---- */
+  .subnav{height:38px;flex:0 0 38px;display:flex;align-items:stretch;gap:18px;padding:0 24px;background:var(--sf);border-bottom:1px solid var(--bdr);}
+  .snt{display:flex;align-items:center;font-size:var(--t-body);color:var(--mu);border-bottom:2px solid transparent;cursor:pointer;}
+  .snt.active{color:var(--hd);font-weight:600;border-bottom-color:var(--hd);}
+  .subnav.locked .snt{color:var(--mu);cursor:default;border-bottom-color:transparent;font-weight:400;}
+  .subnav .lock{margin-left:auto;display:flex;align-items:center;font-size:var(--t-label);color:var(--mu);}
+
+  /* ---- Content row ---- */
+  .contentrow{flex:1;display:flex;min-height:0;}
+  .sidebar{width:200px;flex:0 0 200px;background:var(--sf);border-right:1px solid var(--bdr);padding:8px;overflow:auto;}
+  .canvas{flex:1;overflow:auto;background:var(--sf);min-width:0;}
+  .canvas.muted{background:var(--mute);}
+
+  .s-head{display:flex;align-items:center;gap:6px;padding:6px 8px 8px;}
+  .s-head .nm{flex:1;font-size:var(--t-head);font-weight:600;color:var(--hd);}
+  .s-head .col{color:var(--mu);}
+  .s-label{padding:8px 8px 4px;font-size:var(--t-label);font-weight:600;color:var(--mu);}
+  .s-sec{display:flex;align-items:center;gap:7px;height:30px;padding:0 8px;border-radius:6px;}
+  .s-sec .tri{font-size:9px;color:var(--tx);}
+  .s-sec .gl{font-size:var(--t-body);color:var(--mu);}
+  .s-sec .nm{flex:1;font-size:var(--t-body);font-weight:600;color:var(--hd);}
+  .s-item{display:flex;align-items:center;gap:7px;padding:6px 8px 6px 28px;border-radius:6px;font-size:var(--t-body);color:var(--tx);cursor:pointer;}
+  .s-item .gl{font-size:var(--t-label);color:var(--mu);}
+  .s-item.sel{background:var(--sel);font-weight:600;}
+  .s-item.sel .gl{color:var(--hd);}
+  .s-item.flat{padding-left:10px;}
+  .s-link{background:var(--bg);border-radius:6px;padding:7px 8px;font-size:var(--t-label);font-weight:500;color:var(--tx);cursor:pointer;}
+  .chip{background:var(--fl);border-radius:8px;padding:1px 6px;font-size:var(--t-label);font-weight:600;color:var(--tx);}
+
+  /* ---- Canvas content ---- */
+  .c-head{display:flex;align-items:center;gap:10px;padding:16px 22px 16px 24px;border-bottom:1px solid var(--bdr);}
+  .c-head .ttl{font-size:var(--t-title);font-weight:600;color:var(--hd);}
+  .c-head .sub{font-size:var(--t-label);color:var(--mu);}
+  .c-head .crumbs{display:flex;flex-direction:column;gap:6px;}
+  .crumbrow{display:flex;align-items:center;gap:7px;font-size:var(--t-label);color:var(--mu);}
+  .crumbrow .lk{cursor:pointer;}
+  .crumbrow .lk:hover{color:var(--hd);}
+  .crumbrow .here{font-weight:600;color:var(--hd);}
+  .c-body{padding:20px 24px 24px;display:flex;flex-direction:column;gap:18px;}
+  .sec2{display:flex;align-items:center;gap:8px;padding-bottom:8px;border-bottom:1px solid var(--bdr);font-size:var(--t-label);font-weight:600;color:var(--mu);}
+  .grow{flex:1;}
+  .att{display:flex;gap:14px;}
+  .acard{flex:1;display:flex;align-items:center;gap:12px;padding:12px 16px 12px 14px;border:1px solid var(--bdr);border-radius:8px;background:var(--sf);}
+  .acard .ico{width:32px;height:32px;border:1px solid var(--bdr);border-radius:8px;background:var(--bg);}
+  .acard .num{font-size:var(--t-title);font-weight:600;color:var(--hd);}
+  .acard .lab{font-size:var(--t-label);color:var(--mu);}
+  .grid{display:flex;flex-wrap:wrap;gap:14px;}
+  .tile{width:258px;border:1px solid var(--bdr);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;background:var(--sf);cursor:pointer;}
+  .tile:hover{border-color:var(--mu);}
+  .tile .th{display:flex;align-items:center;gap:8px;}
+  .tile .nm{flex:1;font-size:var(--t-head);font-weight:600;color:var(--hd);}
+  .tile .gl{color:var(--mu);font-size:var(--t-head);}
+  .tile .envs{display:flex;align-items:center;gap:5px;}
+  .tile .meta{font-size:var(--t-label);color:var(--mu);}
+  .li{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--bdr);border-radius:6px;background:var(--sf);}
+  .li.click{cursor:pointer;}
+  .li.click:hover{border-color:var(--mu);}
+  .li .gl{color:var(--mu);font-size:var(--t-head);}
+  .li .nm{flex:1;font-size:var(--t-head);font-weight:600;color:var(--hd);}
+  .li .mt{font-size:var(--t-label);color:var(--mu);}
+  .listcol{display:flex;flex-direction:column;gap:8px;}
+  .step{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--bdr);border-radius:6px;background:var(--sf);}
+  .step .num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:var(--t-body);font-weight:600;border:1px solid var(--mu);color:var(--mu);}
+  .step .num.on{background:var(--hd);color:var(--sf);border-color:var(--hd);}
+  .step .nm{flex:1;font-size:var(--t-head);color:var(--hd);}
+  .step .nm.on{font-weight:600;}
+  .step .st{font-size:var(--t-label);color:var(--mu);}
+  .parentbar{margin:14px 24px 0;display:inline-flex;align-items:center;padding:6px 11px;background:var(--bg);border:1px solid var(--bdr);border-radius:6px;font-size:var(--t-body);font-weight:500;color:var(--tx);width:fit-content;}
+  /* rule editor */
+  .rsec{display:flex;flex-direction:column;gap:7px;}
+  .rsec .rl{font-size:var(--t-label);font-weight:600;color:var(--mu);}
+  .rcard{display:flex;align-items:center;gap:9px;padding:13px 14px;background:var(--sf);border:1px solid var(--bdr);border-radius:8px;}
+  .rpill{background:var(--bg);border:1px solid var(--bdr);border-radius:5px;padding:3px 8px;font-size:var(--t-body);font-weight:500;color:var(--tx);}
+  .addcond{border:1px solid var(--bdr);border-radius:6px;padding:6px 10px;font-size:var(--t-label);font-weight:500;color:var(--tx);cursor:pointer;}
+  /* table */
+  .tbl{border:1px solid var(--bdr);border-radius:8px;overflow:hidden;}
+  .tr{display:flex;align-items:center;height:44px;border-bottom:1px solid var(--bdr);}
+  .tr:last-child{border-bottom:none;}
+  .tr.head{height:36px;background:var(--bg);}
+  .tr.hi{background:var(--sel);}
+  .td{padding:0 14px;display:flex;align-items:center;gap:8px;font-size:var(--t-body);color:var(--tx);}
+  .td.name{flex:1;font-size:var(--t-head);font-weight:600;color:var(--hd);}
+  .tr.head .td{font-size:var(--t-label);font-weight:600;color:var(--mu);}
+
+  /* caption / hint */
+  .hintbar{position:fixed;left:12px;bottom:10px;background:rgba(26,26,26,.85);color:#fff;font-size:10px;padding:6px 10px;border-radius:6px;z-index:50;pointer-events:none;}
+</style>
+</head>
+<body>
+  <div id="app"></div>
+  <div class="hintbar" id="hintbar"></div>
+<script>
+(function(){
+  "use strict";
+  const ENV_DOT={Dev:"var(--dev)",QA:"var(--qa)","Pre-Live":"var(--pre)",Live:"var(--live)"};
+  const STEPS=["Dev","QA","Pre-Live","Live"];
+  const COUNTS={Dev:"46"};
+  const SECTIONS=["Workflows","Records","Connectors","Configs","Change Requests"];
+
+  const CAPTIONS={
+    "1A":"1A · Dashboard — click an app tile to open it. Pipeline Live node → read-only.",
+    "1B":"1B · App overview (no sidebar). Click a workflow row to open it.",
+    "1C":"1C · Workflow + child. Sidebar shows steps; open the Rule Editor from the parent.",
+    "1D":"1D · Live read-only. Banner gates edits. Dev node / Create draft → back to Development.",
+    "RE":"Rule Editor — set_name_and_complete. AI conversation (added a PII condition)."
+  };
+
+  // ---------------- region renderers ----------------
+  function pipeline(env){
+    const cur=env;
+    let nodes="";
+    STEPS.forEach((s,i)=>{
+      const isCur=s===cur;
+      const dotStyle=isCur?`background:${ENV_DOT[s]};`:"";
+      const dotCls=isCur?"dot":"dot outline";
+      let nav="";
+      if(s==="Live"&&!isCur) nav='data-nav="1D" class="pnode clickable"';
+      else if(s==="Dev"&&cur==="Live") nav='data-nav="1B" class="pnode clickable"';
+      else nav='class="pnode'+(isCur?" cur":"")+'"';
+      const count=COUNTS[s]?`<span class="pcount">${COUNTS[s]}</span>`:"";
+      nodes+=`<span ${nav}><i class="${dotCls}" style="${dotStyle}"></i>${s}${count}</span>`;
+      if(i<STEPS.length-1) nodes+=`<i class="pconn"></i>`;
+    });
+    const pillInner = env==="Live"
+      ? `<i class="dot" style="background:${ENV_DOT.Live}"></i><span class="env-name">Live</span><span class="draft">🔒 read-only</span>`
+      : `<i class="dot" style="background:${ENV_DOT.Dev}"></i><span class="env-name">Development</span><span class="draft">· Testing Ch ▾</span>`;
+    return `<div class="pipeline">
+      <div class="pill">${pillInner}</div>
+      <div class="stepper">${nodes}</div>
+      <div class="pbtn ghost">Review Pending ▾</div>
+      <div class="pbtn dark">Merge &amp; Deploy ▾</div>
+    </div>`;
+  }
+
+  function tabstrip(cfg){
+    let tabs="";
+    tabs+=`<div class="tab ${cfg.id==="1A"?"active":""}" data-nav="1A"><span class="ic">⌂</span>Home</div>`;
+    if(cfg.id!=="1A"){
+      tabs+=`<div class="tab active" data-nav="1B"><span class="ic">▦</span>Mayo Client App<span class="x" data-nav="1A">✕</span></div>`;
+    }
+    tabs+=`<div class="newtab">+</div>`;
+    return `<div class="tabstrip">${tabs}</div>`;
+  }
+
+  function subnav(cfg){
+    if(!cfg.subnav) return "";
+    const locked=cfg.subnav.locked;
+    let items=SECTIONS.map(s=>`<div class="snt ${(!locked&&s===cfg.subnav.active)?"active":""}">${s}</div>`).join("");
+    let lock = locked?`<div class="lock">🔒 read-only</div>`:"";
+    return `<div class="subnav ${locked?"locked":""}">${items}${lock}</div>`;
+  }
+
+  // ---- AI panel ----
+  function aiPanel(cfg){
+    let stream="";
+    if(cfg.ai==="min"){
+      stream=`<div class="hint">No context yet — open an app or object and I'll follow along.</div>`;
+    } else {
+      stream+=`<div class="ctx">${cfg.ctx}</div>`;
+      stream+=`<div class="sug"><div class="lbl"><span class="sparkle">✦</span>SUGGESTION</div><div class="txt">${cfg.sug}</div>`+
+        (cfg.sugBtn?`<div class="acts"><div class="btn-dark">${cfg.sugBtn}</div><div class="btn-ghost">Dismiss</div></div>`:"")+`</div>`;
+      if(cfg.exchange){
+        cfg.exchange.forEach(m=>{
+          if(m.role==="user") stream+=`<div class="bubble-user">${m.text}</div>`;
+          else stream+=`<div class="bubble-ai"><div class="tw">▸ Thought &amp; Worked</div><div class="txt">${m.text}</div>`+
+            (m.edit?`<div class="editcard"><i class="dot" style="background:var(--hd)"></i><span class="et">${m.edit}</span><span class="rev">↺ Revert</span></div>`:"")+`</div>`;
+        });
+      }
+    }
+    let composer="";
+    const input=`<div class="inputbox"><div class="ph">${cfg.activeComposer?"Reply or add to this task…":"Ask or instruct…"}</div>
+      <div class="irow"><span class="model">✦ claude-sonnet-4-6</span><span class="grow"></span>
+        <span class="plan"><i class="dot outline"></i>Plan</span><span class="send">➤</span></div></div>`;
+    if(cfg.activeComposer){
+      composer=`<div class="taskcard">
+        <div class="trow"><i class="dot" style="background:var(--hd)"></i><span class="ttl">Add company name field</span></div>
+        <div class="meta">9 actions taken<span>·</span><span class="showall">Show all ▾</span></div>
+        <div class="tc-div"></div>
+        <div class="diff">
+          <div class="diffline"><span class="plus">+</span><span class="verb">Added Field ·</span><span class="entpill">Company Name</span></div>
+          <div class="diffline"><span class="plus">+</span><span class="verb">Added Step ·</span><span class="entpill">Company Details</span></div>
+          <div class="diffline"><span class="plus">+</span><span class="verb">Added Swimlane ·</span><span class="entpill">Company Details</span></div>
+        </div></div>`;
+    }
+    return `<div class="ai">
+      <div class="ai-head"><span class="sparkle">✦</span><span class="title">Studio AI</span><span class="col">«</span></div>
+      <div class="ai-stream">${stream}</div>
+      <div class="composer">${composer}${input}</div>
+    </div>`;
+  }
+
+  // ---- Sidebar ----
+  function sidebar(cfg){
+    if(cfg.sidebar==="sra"){
+      return `<div class="sidebar">
+        <div class="s-link" data-nav="1B">⤴ Parent: Subcontractor Form →</div>
+        <div class="s-head"><span class="nm">Subcontractor Risk Assessment</span><span class="col">«</span></div>
+        <div class="s-sec"><span class="tri">▾</span><span class="gl">◇</span><span class="nm">Steps</span><span class="chip">3</span></div>
+        <div class="s-item sel"><span class="gl">◇</span>Risk Data</div>
+        <div class="s-item"><span class="gl">◇</span>Scoring</div>
+        <div class="s-item"><span class="gl">◇</span>Review</div>
+      </div>`;
+    }
+    if(cfg.sidebar==="rules"){
+      return `<div class="sidebar">
+        <div class="s-head"><span class="nm">Subcontractor Form</span><span class="col">«</span></div>
+        <div class="s-label">RULES</div>
+        <div class="s-item sel"><span class="gl">◇</span>set_name_and_complete</div>
+        <div class="s-item"><span class="gl">◇</span>route_to_risk_questionnaire</div>
+        <div class="s-item"><span class="gl">◇</span>notify_vendor_bu</div>
+      </div>`;
+    }
+    return "";
+  }
+
+  // ---- Canvas variants ----
+  function envDots(){return `<span class="envs"><i class="dot" style="background:var(--dev)"></i><i class="dot" style="background:var(--dev)"></i><i class="dot outline"></i><i class="dot outline"></i></span>`;}
+
+  function canvasDash(){
+    return `<div class="canvas">
+      <div class="c-head"><span class="ttl">Home</span><span class="sub">· work routing</span></div>
+      <div class="c-body">
+        <div class="att">
+          <div class="acard"><div class="ico"></div><div><div class="num">3</div><div class="lab">CRs need your review</div></div></div>
+          <div class="acard"><div class="ico"></div><div><div class="num">2</div><div class="lab">drafts you locked</div></div></div>
+        </div>
+        <div class="sec2">APPS</div>
+        <div class="grid">
+          <div class="tile" data-nav="1B"><div class="th"><span class="gl">▦</span><span class="nm">Mayo Client App</span><span class="gl">★</span></div>${envDots()}<div class="meta">3 open CRs · edited 2h</div></div>
+          <div class="tile"><div class="th"><span class="gl">▦</span><span class="nm">TPRM App for Risk Domains</span><span class="gl">★</span></div>${envDots()}<div class="meta">3 open CRs · edited 2h</div></div>
+          <div class="tile"><div class="th"><span class="gl">▦</span><span class="nm">Vendor Onboarding</span><span class="gl">★</span></div>${envDots()}<div class="meta">3 open CRs · edited 2h</div></div>
+        </div>
+      </div></div>`;
+  }
+
+  function canvasMayo(readonly){
+    const sfRow = readonly
+      ? `<div class="li"><span class="gl">◇</span><span class="nm">Subcontractor Form</span><span class="mt">—</span></div>`
+      : `<div class="li click" data-nav="1C"><span class="gl">◇</span><span class="nm">Subcontractor Form</span><span class="mt">In Progress</span></div>`;
+    const ro = readonly?`<span class="chip" style="background:var(--am-bg);color:var(--am-tx)">Read-only</span>`:"";
+    return `<div class="canvas ${readonly?"muted":""}">
+      <div class="c-head"><span class="ttl">Mayo Client App</span><span class="sub">· overview</span><span class="grow"></span>${ro}</div>
+      <div class="c-body">
+        <div class="sec2">WORKFLOWS<span class="grow"></span><span class="chip">24</span></div>
+        <div class="listcol">
+          ${sfRow}
+          <div class="li"><span class="gl">◇</span><span class="nm">Engagement Intake</span><span class="mt">—</span></div>
+          <div class="li"><span class="gl">◇</span><span class="nm">Vendor Risk Review</span><span class="mt">—</span></div>
+        </div>
+        <div class="meta" style="color:var(--mu);font-size:var(--t-body);padding-left:12px">+ 21 more workflows</div>
+        <div class="sec2">RECORDS<span class="grow"></span><span class="chip">6</span></div>
+        <div class="listcol">
+          <div class="li"><span class="gl">▤</span><span class="nm">External Party</span><span class="mt">67 attributes</span></div>
+          <div class="li"><span class="gl">▤</span><span class="nm">Engagement</span><span class="mt">32 attributes</span></div>
+        </div>
+      </div></div>`;
+  }
+
+  function canvasChild(){
+    return `<div class="canvas">
+      <div class="c-head"><div class="crumbs">
+        <div class="crumbrow"><span class="lk" data-nav="1B">Subcontractor Form</span><span>›</span><span class="here">Subcontractor Risk Assessment</span></div>
+        <div class="crumbrow"><span class="ttl" style="font-size:var(--t-title);color:var(--hd);font-weight:600">Subcontractor Risk Assessment</span><span class="sub">· child workflow · 3 steps</span></div>
+      </div></div>
+      <div class="c-body">
+        <div class="sec2">STEPS</div>
+        <div class="listcol">
+          <div class="step"><span class="num on">1</span><span class="nm on">Risk Data</span><span class="st">active</span></div>
+          <div class="step"><span class="num">2</span><span class="nm">Scoring</span></div>
+          <div class="step"><span class="num">3</span><span class="nm">Review</span></div>
+        </div>
+        <div class="sec2">PARENT WORKFLOW · RULES</div>
+        <div class="listcol">
+          <div class="li click" data-nav="RE"><span class="gl">◇</span><span class="nm">set_name_and_complete</span><span class="mt">Open Rule Editor →</span></div>
+        </div>
+      </div></div>`;
+  }
+
+  function canvasRule(){
+    return `<div class="canvas">
+      <div class="c-head"><div class="crumbs">
+        <div class="crumbrow"><span class="lk" data-nav="1C">Subcontractor Form</span><span>›</span><span class="lk" data-nav="1C">Rules</span><span>›</span><span class="here">set_name_and_complete</span></div>
+        <div class="crumbrow"><span class="ttl" style="font-size:var(--t-title);color:var(--hd);font-weight:600">set_name_and_complete</span><span class="chip">Rule</span></div>
+      </div></div>
+      <div class="c-body">
+        <div class="rsec"><div class="rl">WHEN</div><div class="rcard"><span class="rpill">Submit Step</span><span style="color:var(--mu)">·</span><span class="rpill">Subcontractor Details</span></div></div>
+        <div class="rsec"><div class="rl">CONDITIONS</div><div class="rcard"><span style="color:var(--mu)">always</span><span class="grow"></span><span class="addcond">+ Add condition</span></div></div>
+        <div class="rsec"><div class="rl">THEN</div><div class="rcard"><span>Use connector from library</span><span class="rpill">⚡ Docusign</span></div></div>
+      </div></div>`;
+  }
+
+  function canvasFor(cfg){
+    switch(cfg.canvas){
+      case "dash": return canvasDash();
+      case "mayo": return canvasMayo(false);
+      case "mayoRO": return canvasMayo(true);
+      case "child": return canvasChild();
+      case "rule": return canvasRule();
+    }
+    return "";
+  }
+
+  // ---------------- screen configs ----------------
+  const SCREENS={
+    "1A":{id:"1A",env:"Dev",ai:"min",canvas:"dash"},
+    "1B":{id:"1B",env:"Dev",ai:"std",activeComposer:true,subnav:{active:"Workflows"},canvas:"mayo",
+      ctx:"✦ Mayo Client App",sug:"46 drafts in Dev — 12 inactive.",sugBtn:"Show drafts"},
+    "1C":{id:"1C",env:"Dev",ai:"std",activeComposer:true,subnav:{active:"Workflows"},sidebar:"sra",canvas:"child",
+      ctx:"✦ Subcontractor Risk Assessment · child of Subcontractor Form",sug:"Triggered from Step 3 of Subcontractor Form when the PII toggle is On.",sugBtn:"Show trigger"},
+    "1D":{id:"1D",env:"Live",ai:"std",activeComposer:true,banner:true,subnav:{active:"Workflows",locked:true},canvas:"mayoRO",
+      ctx:"✦ Mayo Client App · Live",sug:"You're in Live — changes require a new draft in Development.",sugBtn:"Create draft"},
+    "RE":{id:"RE",env:"Dev",ai:"std",subnav:{active:"Workflows"},sidebar:"rules",canvas:"rule",
+      ctx:"✦ Rule · set_name_and_complete",sug:"This rule fires on every submit — want me to add a condition so it only runs when the PII toggle is On?",sugBtn:"Add condition",
+      exchange:[{role:"user",text:"Only run this when the PII toggle is On."},
+                {role:"ai",text:"Done — added a condition to set_name_and_complete: it now runs only when “Subcontractor handles client PII” is On.",edit:"Condition added · PII toggle is On"}]}
+  };
+
+  function renderFrame(cfg){
+    return `<div class="frame">
+      <div class="topbar"><span class="wordmark">studio</span><span class="spacer"></span><span class="avatar"></span></div>
+      ${pipeline(cfg.env)}
+      ${cfg.banner?`<div class="banner"><span class="warn">⚠</span><span class="btxt">Live is read-only. Create a draft in Development to make changes.</span><span class="bbtn" data-nav="1B">Create draft</span></div>`:""}
+      <div class="bodyrow">
+        ${aiPanel(cfg)}
+        <div class="main">
+          ${tabstrip(cfg)}
+          ${subnav(cfg)}
+          <div class="contentrow">
+            ${sidebar(cfg)}
+            ${canvasFor(cfg)}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  let current="1A";
+  function go(id){ if(!SCREENS[id]) return; current=id; render(); }
+  function render(){
+    const cfg=SCREENS[current];
+    document.getElementById("app").innerHTML=renderFrame(cfg);
+    document.getElementById("hintbar").textContent=CAPTIONS[current]||"";
+  }
+  document.addEventListener("click",function(e){
+    const t=e.target.closest("[data-nav]");
+    if(t){ e.stopPropagation(); go(t.getAttribute("data-nav")); }
+  });
+  render();
+})();
+</script>
+</body>
+</html>
