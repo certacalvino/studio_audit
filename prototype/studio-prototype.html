@@ -34,8 +34,8 @@
   .pill{display:flex;align-items:center;gap:7px;padding:4px 8px;border:1px solid var(--bdr);border-radius:6px;}
   .pill .env-name{font-size:var(--t-body);font-weight:600;color:var(--hd);}
   .pill .draft{font-size:var(--t-label);color:var(--mu);}
-  .dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:0 0 8px;}
-  .dot.outline{background:transparent;border:1.5px solid var(--mu);}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:0 0 9px;background:transparent;}
+  .dot.outline{background:transparent;border:1.5px solid #B4B7BD;}
   .stepper{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;}
   .pnode{display:flex;align-items:center;gap:6px;font-size:var(--t-label);color:var(--mu);}
   .pnode.cur{color:var(--hd);font-weight:600;}
@@ -55,13 +55,15 @@
 
   /* ---- Body ---- */
   .bodyrow{flex:1;display:flex;min-height:0;}
-  .ai{width:300px;flex:0 0 300px;background:var(--sf);border-right:1px solid var(--bdr);display:flex;flex-direction:column;min-height:0;}
+  .ai{width:300px;flex:0 0 300px;background:var(--sf);border-right:1px solid var(--bdr);display:flex;flex-direction:column;min-height:0;position:relative;overflow:hidden;transition:width 200ms ease,flex-basis 200ms ease;}
+  .ai.collapsed{width:40px;flex-basis:40px;}
+  .ai.collapsed .title,.ai.collapsed .ai-stream,.ai.collapsed .composer{display:none;}
   .main{flex:1;display:flex;flex-direction:column;min-width:0;}
 
   /* ---- AI panel ---- */
   .ai-head{height:48px;display:flex;align-items:center;gap:8px;padding:0 14px;border-bottom:1px solid var(--bdr);}
   .ai-head .title{flex:1;font-size:var(--t-title);font-weight:600;color:var(--hd);}
-  .ai-head .col{color:var(--mu);}
+  .ai-head .col{color:var(--mu);cursor:pointer;user-select:none;}
   .sparkle{color:var(--hd);}
   .ai-stream{flex:1;overflow:auto;padding:12px 14px;display:flex;flex-direction:column;gap:12px;}
   .hint{color:var(--mu);font-size:var(--t-ai);padding-top:8px;}
@@ -120,20 +122,25 @@
 
   /* ---- Content row ---- */
   .contentrow{flex:1;display:flex;min-height:0;}
-  .sidebar{width:200px;flex:0 0 200px;background:var(--sf);border-right:1px solid var(--bdr);padding:8px;overflow:auto;}
+  .sidebar{width:200px;flex:0 0 200px;min-width:200px;background:var(--sf);border-right:1px solid var(--bdr);padding:8px;overflow:auto;transition:width 200ms ease,flex-basis 200ms ease,min-width 200ms ease;}
+  .sidebar.cfg{width:160px;flex-basis:160px;min-width:160px;}
+  .sidebar.collapsed{width:26px;flex-basis:26px;min-width:26px;padding:6px 0;overflow:hidden;}
+  .sidebar.collapsed .s-head .nm,.sidebar.collapsed .s-link,.sidebar.collapsed .s-sec,.sidebar.collapsed .s-item,.sidebar.collapsed .s-label{display:none;}
+  .sidebar.collapsed .s-head{justify-content:center;padding:6px 0;}
   .canvas{flex:1;overflow:auto;background:var(--sf);min-width:0;}
   .canvas.muted{background:var(--mute);}
 
   .s-head{display:flex;align-items:center;gap:6px;padding:6px 8px 8px;}
-  .s-head .nm{flex:1;font-size:var(--t-head);font-weight:600;color:var(--hd);}
-  .s-head .col{color:var(--mu);}
+  .s-head .nm{flex:1;min-width:0;font-size:var(--t-head);font-weight:600;color:var(--hd);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .s-head .col{color:var(--mu);cursor:pointer;user-select:none;}
   .s-label{padding:8px 8px 4px;font-size:var(--t-label);font-weight:600;color:var(--mu);}
   .s-sec{display:flex;align-items:center;gap:7px;height:30px;padding:0 8px;border-radius:6px;}
   .s-sec .tri{font-size:9px;color:var(--tx);}
   .s-sec .gl{font-size:var(--t-body);color:var(--mu);}
-  .s-sec .nm{flex:1;font-size:var(--t-body);font-weight:600;color:var(--hd);}
-  .s-item{display:flex;align-items:center;gap:7px;padding:6px 8px 6px 28px;border-radius:6px;font-size:var(--t-body);color:var(--tx);cursor:pointer;}
-  .s-item .gl{font-size:var(--t-label);color:var(--mu);}
+  .s-sec .nm{flex:1;min-width:0;font-size:var(--t-body);font-weight:600;color:var(--hd);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .s-item{display:flex;align-items:center;gap:7px;padding:6px 8px 6px 28px;border-radius:6px;font-size:var(--t-body);color:var(--tx);cursor:pointer;overflow:hidden;white-space:nowrap;}
+  .s-item .lbl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .s-item .gl{font-size:var(--t-label);color:var(--mu);flex:0 0 auto;}
   .s-item.sel{background:var(--sel);font-weight:600;}
   .s-item.sel .gl{color:var(--hd);}
   .s-item.flat{padding-left:10px;}
@@ -209,13 +216,15 @@
   const STEPS=["Dev","QA","Pre-Live","Live"];
   const COUNTS={Dev:"46"};
   const SECTIONS=["Workflows","Records","Connectors","Configs","Change Requests"];
+  let aiCollapsed=false, sideCollapsed=false;
 
   const CAPTIONS={
     "1A":"1A · Dashboard — click an app tile to open it. Pipeline Live node → read-only.",
     "1B":"1B · App overview (no sidebar). Click a workflow row to open it.",
     "1C":"1C · Workflow + child. Sidebar shows steps; open the Rule Editor from the parent.",
     "1D":"1D · Live read-only. Banner gates edits. Dev node / Create draft → back to Development.",
-    "RE":"Rule Editor — set_name_and_complete. AI conversation (added a PII condition)."
+    "RE":"Rule Editor — set_name_and_complete. AI conversation (added a PII condition).",
+    "CFG":"Configs — App Settings level (160px secondary sidebar). Business Units table."
   };
 
   // ---------------- region renderers ----------------
@@ -258,7 +267,12 @@
   function subnav(cfg){
     if(!cfg.subnav) return "";
     const locked=cfg.subnav.locked;
-    let items=SECTIONS.map(s=>`<div class="snt ${(!locked&&s===cfg.subnav.active)?"active":""}">${s}</div>`).join("");
+    const NAVMAP={Workflows:"1B",Configs:"CFG"};
+    let items=SECTIONS.map(s=>{
+      const active=!locked&&s===cfg.subnav.active;
+      const nav=(!locked&&NAVMAP[s])?` data-nav="${NAVMAP[s]}"`:"";
+      return `<div class="snt ${active?"active":""}"${nav}>${s}</div>`;
+    }).join("");
     let lock = locked?`<div class="lock">🔒 read-only</div>`:"";
     return `<div class="subnav ${locked?"locked":""}">${items}${lock}</div>`;
   }
@@ -268,8 +282,10 @@
     let stream="";
     if(cfg.ai==="min"){
       stream=`<div class="hint">No context yet — open an app or object and I'll follow along.</div>`;
+    } else if(cfg.composerOnly){
+      stream="";
     } else {
-      stream+=`<div class="ctx">${cfg.ctx}</div>`;
+      if(cfg.ctx) stream+=`<div class="ctx">${cfg.ctx}</div>`;
       stream+=`<div class="sug"><div class="lbl"><span class="sparkle">✦</span>SUGGESTION</div><div class="txt">${cfg.sug}</div>`+
         (cfg.sugBtn?`<div class="acts"><div class="btn-dark">${cfg.sugBtn}</div><div class="btn-ghost">Dismiss</div></div>`:"")+`</div>`;
       if(cfg.exchange){
@@ -295,8 +311,8 @@
           <div class="diffline"><span class="plus">+</span><span class="verb">Added Swimlane ·</span><span class="entpill">Company Details</span></div>
         </div></div>`;
     }
-    return `<div class="ai">
-      <div class="ai-head"><span class="sparkle">✦</span><span class="title">Studio AI</span><span class="col">«</span></div>
+    return `<div class="ai${aiCollapsed?" collapsed":""}">
+      <div class="ai-head"><span class="sparkle">✦</span><span class="title">Studio AI</span><span class="col" data-act="ai">${aiCollapsed?"»":"«"}</span></div>
       <div class="ai-stream">${stream}</div>
       <div class="composer">${composer}${input}</div>
     </div>`;
@@ -304,23 +320,32 @@
 
   // ---- Sidebar ----
   function sidebar(cfg){
+    const cc=sideCollapsed?" collapsed":"";
+    const tg=sideCollapsed?"‹":"›";
     if(cfg.sidebar==="sra"){
-      return `<div class="sidebar">
+      return `<div class="sidebar${cc}">
         <div class="s-link" data-nav="1B">⤴ Parent: Subcontractor Form →</div>
-        <div class="s-head"><span class="nm">Subcontractor Risk Assessment</span><span class="col">«</span></div>
+        <div class="s-head"><span class="nm">Subcontractor Risk Assessment</span><span class="col" data-act="side">${tg}</span></div>
         <div class="s-sec"><span class="tri">▾</span><span class="gl">◇</span><span class="nm">Steps</span><span class="chip">3</span></div>
-        <div class="s-item sel"><span class="gl">◇</span>Risk Data</div>
-        <div class="s-item"><span class="gl">◇</span>Scoring</div>
-        <div class="s-item"><span class="gl">◇</span>Review</div>
+        <div class="s-item sel"><span class="gl">◇</span><span class="lbl">Risk Data</span></div>
+        <div class="s-item"><span class="gl">◇</span><span class="lbl">Scoring</span></div>
+        <div class="s-item"><span class="gl">◇</span><span class="lbl">Review</span></div>
       </div>`;
     }
     if(cfg.sidebar==="rules"){
-      return `<div class="sidebar">
-        <div class="s-head"><span class="nm">Subcontractor Form</span><span class="col">«</span></div>
+      return `<div class="sidebar${cc}">
+        <div class="s-head"><span class="nm">Subcontractor Form</span><span class="col" data-act="side">${tg}</span></div>
         <div class="s-label">RULES</div>
-        <div class="s-item sel"><span class="gl">◇</span>set_name_and_complete</div>
-        <div class="s-item"><span class="gl">◇</span>route_to_risk_questionnaire</div>
-        <div class="s-item"><span class="gl">◇</span>notify_vendor_bu</div>
+        <div class="s-item sel"><span class="gl">◇</span><span class="lbl">set_name_and_complete</span></div>
+        <div class="s-item"><span class="gl">◇</span><span class="lbl">route_to_risk_questionnaire</span></div>
+        <div class="s-item"><span class="gl">◇</span><span class="lbl">notify_vendor_bu</span></div>
+      </div>`;
+    }
+    if(cfg.sidebar==="cfg"){
+      const items=["General","Notifications","Business Units","Integration Tokens","Webhooks","Scheduled Triggers","Overrides","Permissions"];
+      return `<div class="sidebar cfg">
+        <div class="s-head"><span class="nm">Configs</span></div>
+        ${items.map(it=>`<div class="s-item ${it==="Business Units"?"sel":""}"><span class="gl">⚙</span><span class="lbl">${it}</span></div>`).join("")}
       </div>`;
     }
     return "";
@@ -402,6 +427,23 @@
       </div></div>`;
   }
 
+  function canvasConfigs(){
+    const td=(t,w,name)=>`<div class="td${name?" name":""}"${w?` style="flex:0 0 ${w}px;width:${w}px"`:""}>${t}</div>`;
+    return `<div class="canvas">
+      <div class="c-head"><div class="crumbs">
+        <div class="crumbrow"><span class="lk" data-nav="1B">Mayo Client App</span><span>›</span><span class="here">Configs</span></div>
+        <div class="crumbrow"><span class="ttl" style="font-size:var(--t-title);color:var(--hd);font-weight:600">Business Units</span><span class="sub">· Configs</span></div>
+      </div></div>
+      <div class="c-body">
+        <div class="sec2">2 BUSINESS UNITS<span class="grow"></span><span class="chip">+ Add</span></div>
+        <div class="tbl">
+          <div class="tr head">${td("Name",0,true)}${td("Code",160)}${td("Regions",240)}</div>
+          <div class="tr">${td("Vendor BU",0,true)}${td("VBU",160)}${td("North America",240)}</div>
+          <div class="tr">${td("Internal BU",0,true)}${td("IBU",160)}${td("Global",240)}</div>
+        </div>
+      </div></div>`;
+  }
+
   function canvasFor(cfg){
     switch(cfg.canvas){
       case "dash": return canvasDash();
@@ -409,6 +451,7 @@
       case "mayoRO": return canvasMayo(true);
       case "child": return canvasChild();
       case "rule": return canvasRule();
+      case "configs": return canvasConfigs();
     }
     return "";
   }
@@ -418,14 +461,15 @@
     "1A":{id:"1A",env:"Dev",ai:"min",canvas:"dash"},
     "1B":{id:"1B",env:"Dev",ai:"std",activeComposer:true,subnav:{active:"Workflows"},canvas:"mayo",
       ctx:"✦ Mayo Client App",sug:"46 drafts in Dev — 12 inactive.",sugBtn:"Show drafts"},
-    "1C":{id:"1C",env:"Dev",ai:"std",activeComposer:true,subnav:{active:"Workflows"},sidebar:"sra",canvas:"child",
-      ctx:"✦ Subcontractor Risk Assessment · child of Subcontractor Form",sug:"Triggered from Step 3 of Subcontractor Form when the PII toggle is On.",sugBtn:"Show trigger"},
+    "1C":{id:"1C",env:"Dev",ai:"std",activeComposer:true,composerOnly:true,subnav:{active:"Workflows"},sidebar:"sra",canvas:"child"},
     "1D":{id:"1D",env:"Live",ai:"std",activeComposer:true,banner:true,subnav:{active:"Workflows",locked:true},canvas:"mayoRO",
       ctx:"✦ Mayo Client App · Live",sug:"You're in Live — changes require a new draft in Development.",sugBtn:"Create draft"},
     "RE":{id:"RE",env:"Dev",ai:"std",subnav:{active:"Workflows"},sidebar:"rules",canvas:"rule",
       ctx:"✦ Rule · set_name_and_complete",sug:"This rule fires on every submit — want me to add a condition so it only runs when the PII toggle is On?",sugBtn:"Add condition",
       exchange:[{role:"user",text:"Only run this when the PII toggle is On."},
-                {role:"ai",text:"Done — added a condition to set_name_and_complete: it now runs only when “Subcontractor handles client PII” is On.",edit:"Condition added · PII toggle is On"}]}
+                {role:"ai",text:"Done — added a condition to set_name_and_complete: it now runs only when “Subcontractor handles client PII” is On.",edit:"Condition added · PII toggle is On"}]},
+    "CFG":{id:"CFG",env:"Dev",ai:"std",subnav:{active:"Configs"},sidebar:"cfg",canvas:"configs",
+      ctx:"✦ Configs · Business Units",sug:"Vendor BU is referenced by 6 workflow assignee rules — changes here will affect those rules.",sugBtn:"Show workflows"}
   };
 
   function renderFrame(cfg){
@@ -454,7 +498,23 @@
     document.getElementById("app").innerHTML=renderFrame(cfg);
     document.getElementById("hintbar").textContent=CAPTIONS[current]||"";
   }
+  // collapse toggles operate on the live DOM (no re-render) so width animates via CSS transition
+  function toggleCollapse(which){
+    if(which==="ai"){
+      aiCollapsed=!aiCollapsed;
+      const el=document.querySelector(".ai");
+      if(el){ el.classList.toggle("collapsed",aiCollapsed);
+        const t=el.querySelector(".ai-head .col"); if(t) t.textContent=aiCollapsed?"»":"«"; }
+    } else if(which==="side"){
+      sideCollapsed=!sideCollapsed;
+      const el=document.querySelector(".sidebar");
+      if(el){ el.classList.toggle("collapsed",sideCollapsed);
+        const t=el.querySelector(".s-head .col"); if(t) t.textContent=sideCollapsed?"‹":"›"; }
+    }
+  }
   document.addEventListener("click",function(e){
+    const act=e.target.closest("[data-act]");
+    if(act){ e.stopPropagation(); toggleCollapse(act.getAttribute("data-act")); return; }
     const t=e.target.closest("[data-nav]");
     if(t){ e.stopPropagation(); go(t.getAttribute("data-nav")); }
   });
