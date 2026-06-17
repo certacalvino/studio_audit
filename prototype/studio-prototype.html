@@ -55,7 +55,7 @@
 
   /* ---- Body ---- */
   .bodyrow{flex:1;display:flex;min-height:0;}
-  .ai{width:300px;flex:0 0 300px;background:var(--sf);border-right:1px solid var(--bdr);display:flex;flex-direction:column;min-height:0;position:relative;overflow:hidden;transition:width 200ms ease,flex-basis 200ms ease;}
+  .ai{width:380px;flex:0 0 380px;background:var(--sf);border-right:1px solid var(--bdr);display:flex;flex-direction:column;min-height:0;position:relative;overflow:hidden;transition:width 200ms ease,flex-basis 200ms ease;}
   .ai.collapsed{width:40px;flex-basis:40px;border-right:1px solid #E5E7EB;background:#F9FAFB;overflow:visible;}
   .ai.collapsed .ai-head,.ai.collapsed .ai-stream,.ai.collapsed .composer{display:none;}
   .ai-cid{display:none;}
@@ -246,7 +246,7 @@
     let nodes="";
     STEPS.forEach((s,i)=>{
       const isCur=s===cur;
-      const dotStyle=isCur?`background:${ENV_DOT[s]};border:none;`:`background:transparent;border:1.5px solid ${ENV_DOT[s]};`;
+      const dotStyle=isCur?`background:${ENV_DOT[s]};border:none;`:`background:transparent;border:1.5px solid #D1D5DB;`;
       const dotCls="dot";
       let nav="";
       if(s==="Live"&&!isCur) nav='data-nav="1D" class="pnode clickable"';
