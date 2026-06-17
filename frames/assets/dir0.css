@@ -1,0 +1,225 @@
+/* ============================================================
+   Direction 0 — composed extensions on top of Catalyst
+   Every value uses Catalyst tokens from colors_and_type.css.
+   New atoms agreed with design lead:
+     - Segmented control (grouped Catalyst buttons)
+     - Pipeline bar (horizontal stepper, env-tinted)
+     - AI side-sheet (320px right panel, Card container)
+     - Command palette (Dialog + Field)
+     - Status bar (28px bottom, neutral-200, LabelSm)
+   Environment colors remap to Catalyst semantic tokens:
+     Dev=green-400 · QA=brand-400 · Pre-Live=orange-400 · Live=red-400
+   ============================================================ */
+
+/* ---- Environment color variables (remap, no new tokens) ---- */
+:root {
+  --env-dev:      var(--colors-green-400);
+  --env-qa:       var(--colors-brand-400);
+  --env-prelive:  var(--colors-orange-400);
+  --env-live:     var(--colors-red-400);
+}
+
+/* ===== Segmented control (new atom) ===== */
+.ck-seg {
+  display: inline-flex;
+  border: 1px solid var(--colors-neutral-500);
+  border-radius: var(--radius-4);
+  overflow: hidden;
+  background: #fff;
+}
+.ck-seg-btn {
+  appearance: none;
+  border: none;
+  background: #fff;
+  color: var(--colors-neutral-750);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  height: 30px;
+  padding: 0 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-left: 1px solid var(--colors-neutral-400);
+}
+.ck-seg-btn:first-child { border-left: none; }
+.ck-seg-btn:hover { background: var(--colors-neutral-300); color: var(--colors-neutral-800); }
+.ck-seg-btn.active {
+  background: var(--colors-brand-400);
+  color: #fff;
+  border-left-color: var(--colors-brand-400);
+}
+.ck-seg-btn.active + .ck-seg-btn { border-left-color: var(--colors-brand-400); }
+.ck-seg-sm .ck-seg-btn { height: 26px; padding: 0 10px; font-size: 12px; }
+
+/* ===== Global left rail (extends ck-sidebar) ===== */
+.ck-rail-label {
+  font-size: var(--type-overline-size);
+  line-height: var(--type-overline-line);
+  letter-spacing: var(--type-overline-tracking);
+  font-weight: var(--type-overline-weight);
+  text-transform: uppercase;
+  color: var(--colors-neutral-600);
+  padding: 4px 12px;
+  margin-top: 6px;
+}
+.ck-nav-count {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--colors-neutral-600);
+}
+.ck-nav-item.active .ck-nav-count { color: var(--colors-brand-600); }
+
+/* ===== Attention strip ===== */
+.ck-attn {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.ck-attn-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid var(--colors-neutral-400);
+  border-left-width: 3px;
+  border-radius: var(--radius-4);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: background 150ms ease-out;
+}
+.ck-attn-card:hover { background: var(--colors-neutral-200); }
+.ck-attn-icon {
+  width: 28px; height: 28px; border-radius: var(--radius-4);
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.ck-attn-count { font-size: 20px; font-weight: 700; color: var(--colors-neutral-800); line-height: 1; letter-spacing: -0.01em; }
+.ck-attn-text  { font-size: 12px; color: var(--colors-neutral-700); margin-top: 4px; }
+.ck-attn-brand  { border-left-color: var(--colors-brand-400); }
+.ck-attn-brand  .ck-attn-icon { background: var(--colors-brand-100);  color: var(--colors-brand-500); }
+.ck-attn-purple { border-left-color: var(--colors-purple-400); }
+.ck-attn-purple .ck-attn-icon { background: var(--colors-purple-200); color: var(--colors-purple-600); }
+.ck-attn-orange { border-left-color: var(--colors-orange-400); }
+.ck-attn-orange .ck-attn-icon { background: var(--colors-orange-200); color: var(--colors-orange-600); }
+.ck-attn-neutral{ border-left-color: var(--colors-neutral-600); }
+.ck-attn-neutral .ck-attn-icon { background: var(--colors-neutral-300); color: var(--colors-neutral-700); }
+
+/* ===== Section bar (APPS header) ===== */
+.ck-section-head {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 12px;
+}
+.ck-section-title {
+  font-size: var(--type-overline-size);
+  line-height: var(--type-overline-line);
+  letter-spacing: var(--type-overline-tracking);
+  font-weight: var(--type-overline-weight);
+  text-transform: uppercase;
+  color: var(--colors-neutral-600);
+}
+.ck-section-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+
+/* ===== Filter row ===== */
+.ck-filterbar { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.ck-chip-select {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 30px; padding: 0 10px;
+  background: #fff; border: 1px solid var(--colors-neutral-500);
+  border-radius: var(--radius-4);
+  font-size: 13px; font-weight: 500; color: var(--colors-neutral-750);
+  cursor: pointer;
+}
+.ck-chip-select:hover { background: var(--colors-neutral-300); }
+.ck-chip-select svg { color: var(--colors-neutral-600); }
+
+/* ===== App group (collapsible bucket) ===== */
+.ck-group { margin-bottom: 24px; }
+.ck-group-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 0;
+  font-size: 13px; font-weight: 600; color: var(--colors-neutral-750);
+  cursor: pointer;
+}
+.ck-group-head .ck-group-count { color: var(--colors-neutral-600); font-weight: 500; }
+.ck-group-head .caret { color: var(--colors-neutral-600); transition: transform 150ms; }
+.ck-group.collapsed .caret { transform: rotate(-90deg); }
+
+/* ===== App tile grid ===== */
+.ck-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 1180px) { .ck-tiles { grid-template-columns: repeat(2, 1fr); } }
+.ck-tile {
+  background: #fff;
+  border: 1px solid var(--colors-neutral-400);
+  border-radius: var(--radius-4);
+  padding: 16px;
+  cursor: pointer;
+  transition: box-shadow 150ms ease-out, border-color 150ms ease-out;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.ck-tile:hover { box-shadow: var(--shadow-1); border-color: var(--colors-neutral-500); }
+.ck-tile-sandbox { background: var(--colors-neutral-200); }
+.ck-tile-head { display: flex; align-items: flex-start; gap: 10px; }
+.ck-tile-mark {
+  width: 36px; height: 36px; border-radius: var(--radius-4);
+  background: var(--colors-brand-100); color: var(--colors-brand-500);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.ck-tile-name { font-weight: 600; font-size: 14px; color: var(--colors-neutral-800); }
+.ck-tile-sub  { font-size: 11px; color: var(--colors-neutral-700); margin-top: 2px; }
+.ck-tile-star { margin-left: auto; color: var(--colors-orange-400); background: none; border: none; cursor: pointer; padding: 2px; }
+.ck-tile-star.off { color: var(--colors-neutral-500); }
+
+/* environment health row — four dots */
+.ck-envrow { display: flex; align-items: center; gap: 14px; }
+.ck-env { display: inline-flex; align-items: center; gap: 6px; }
+.ck-env-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  border: 2px solid var(--colors-neutral-500);
+  background: transparent;
+}
+.ck-env-label { font-size: 11px; font-weight: 500; color: var(--colors-neutral-700); }
+.ck-env-meta  { font-size: 11px; font-weight: 600; color: var(--colors-neutral-800); }
+/* filled = tier has pending/promotable changes */
+.ck-env.dev.on     .ck-env-dot { background: var(--env-dev);     border-color: var(--env-dev); }
+.ck-env.qa.on      .ck-env-dot { background: var(--env-qa);      border-color: var(--env-qa); }
+.ck-env.prelive.on .ck-env-dot { background: var(--env-prelive); border-color: var(--env-prelive); }
+.ck-env.live.on    .ck-env-dot { background: var(--env-live);    border-color: var(--env-live); }
+.ck-env.on .ck-env-label { color: var(--colors-neutral-800); }
+
+.ck-tile-foot {
+  display: flex; align-items: center; gap: 12px;
+  padding-top: 12px; border-top: 1px solid var(--colors-neutral-300);
+  font-size: 12px; color: var(--colors-neutral-700);
+}
+.ck-tile-foot .sep { color: var(--colors-neutral-500); }
+.ck-avatar-stack { display: inline-flex; margin-left: auto; }
+.ck-avatar-stack .ck-avatar { margin-left: -6px; box-shadow: 0 0 0 2px #fff; }
+.ck-avatar-stack .ck-avatar:first-child { margin-left: 0; }
+
+/* deploy spinner chip */
+.ck-spinner-chip { display: inline-flex; align-items: center; gap: 6px; color: var(--colors-teal-600); }
+.ck-spinner {
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 2px solid var(--colors-teal-300); border-top-color: var(--colors-teal-500);
+  animation: ck-spin 800ms linear infinite;
+}
+@keyframes ck-spin { to { transform: rotate(360deg); } }
+
+/* ===== Status bar (new atom, for app-interior frames) ===== */
+.ck-statusbar {
+  height: 28px; flex-shrink: 0;
+  display: flex; align-items: center; gap: 16px;
+  padding: 0 16px;
+  background: var(--colors-neutral-200);
+  border-top: 1px solid var(--colors-neutral-400);
+  font-size: var(--type-label-sm-size);
+  line-height: var(--type-label-sm-line);
+  font-weight: var(--type-label-sm-weight);
+  color: var(--colors-neutral-700);
+}
+.ck-statusbar .spacer { flex: 1; }

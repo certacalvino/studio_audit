@@ -1,0 +1,302 @@
+/* ============================================================
+   Catalyst — Certa Design System
+   colors_and_type.css
+
+   Source of truth ported from catalyst/styles/variables.css
+   plus typography ramp from components/Typography/Typography.module.css
+   ============================================================ */
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./fonts/Inter-VariableFont_opsz_wght.ttf") format("truetype-variations"),
+       url("./fonts/Inter-VariableFont_opsz_wght.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./fonts/Inter-Italic-VariableFont_opsz_wght.ttf") format("truetype-variations"),
+       url("./fonts/Inter-Italic-VariableFont_opsz_wght.ttf") format("truetype");
+}
+
+:root {
+  /* ---------- Brand (Certa blue) ---------- */
+  --colors-brand-50:  #f8faff;
+  --colors-brand-100: #ecf2ff;
+  --colors-brand-200: #a5bafe;
+  --colors-brand-300: #5c8bfe;
+  --colors-brand-400: #1f5eff; /* primary */
+  --colors-brand-500: #194fd7; /* hover */
+  --colors-brand-600: #1543b5; /* pressed */
+
+  --colors-certa-brand-50:  #f8faff;
+  --colors-certa-brand-100: #ecf2ff;
+  --colors-certa-brand-200: #a5bafe;
+  --colors-certa-brand-300: #5c8bfe;
+  --colors-certa-brand-400: #1f5eff;
+  --colors-certa-brand-500: #194fd7;
+  --colors-certa-brand-600: #1543b5;
+
+  /* ---------- Neutrals ---------- */
+  --colors-neutral-100: #ffffff;
+  --colors-neutral-200: #f8f9f9;
+  --colors-neutral-300: #f4f5f5;
+  --colors-neutral-400: #eeefef;
+  --colors-neutral-500: #d0d4df;
+  --colors-neutral-600: #8892ac;
+  --colors-neutral-700: #6b7693;
+  --colors-neutral-750: #4b5366;
+  --colors-neutral-800: #00164e; /* primary text — deep navy */
+  --colors-neutral-900: #202730;
+
+  /* ---------- Semantic / Status ---------- */
+  --colors-red-100: #fff8f8;
+  --colors-red-200: #fee9e8;
+  --colors-red-300: #fdc7c7;
+  --colors-red-400: #fb2e3d;
+  --colors-red-500: #ea1931;
+  --colors-red-600: #b71327;
+
+  --colors-green-100: #f7fbf7;
+  --colors-green-200: #e3f1e6;
+  --colors-green-300: #baddc1;
+  --colors-green-400: #49a55b;
+  --colors-green-500: #158a28;
+  --colors-green-600: #0c6b1a;
+
+  --colors-orange-100: #fff9f0;
+  --colors-orange-200: #feebcc;
+  --colors-orange-300: #fdcd7d;
+  --colors-orange-400: #fcac27;
+  --colors-orange-500: #a56b0b;
+  --colors-orange-600: #7f5209;
+
+  --colors-teal-100: #f4fbff;
+  --colors-teal-200: #d9f1ff;
+  --colors-teal-300: #a0dcff;
+  --colors-teal-400: #65c6ff;
+  --colors-teal-500: #407da5;
+  --colors-teal-600: #32607f;
+
+  /* ---------- Tag / chart palette ---------- */
+  --colors-blueberry-100: #faf9fc;
+  --colors-blueberry-200: #dbcff4;
+  --colors-blueberry-300: #c6b2ed;
+  --colors-blueberry-400: #461d97;
+
+  --colors-purple-100: #fef8fd;
+  --colors-purple-200: #f8e9f9;
+  --colors-purple-300: #efc8ee;
+  --colors-purple-400: #d34dc0;
+  --colors-purple-500: #c144ab;
+  --colors-purple-600: #973482;
+
+  --colors-pink-100: #fbe9f2;
+  --colors-pink-200: #f6c6df;
+  --colors-pink-300: #e15495;
+  --colors-pink-400: #5d223d;
+
+  --colors-brick-100: #faebe6;
+  --colors-brick-200: #f2ccc0;
+  --colors-brick-300: #e15f48;
+  --colors-brick-400: #61221c;
+
+  --colors-blue-100: #e3eff8;
+  --colors-blue-200: #b9daed;
+  --colors-blue-300: #4591cb;
+  --colors-blue-400: #163b57;
+
+  --colors-yellow-200: #fef282;
+  --colors-yellow-300: #ffe81a;
+  --highlight-yellow:  #ffe81a;
+
+  /* ---------- Semantic aliases ---------- */
+  --fg-primary:    var(--colors-neutral-800); /* deep navy */
+  --fg-secondary:  var(--colors-neutral-700);
+  --fg-muted:      var(--colors-neutral-600);
+  --fg-on-brand:   var(--colors-neutral-100);
+  --fg-link:       var(--colors-brand-400);
+
+  --bg-app:        var(--colors-neutral-200);
+  --bg-surface:    var(--colors-neutral-100);
+  --bg-subtle:     var(--colors-neutral-300);
+  --bg-muted:      var(--colors-neutral-400);
+  --bg-brand:      var(--colors-brand-400);
+  --bg-brand-soft: var(--colors-brand-100);
+
+  --border-default: var(--colors-neutral-500);
+  --border-subtle:  var(--colors-neutral-400);
+  --border-strong:  var(--colors-neutral-700);
+  --border-brand:   var(--colors-brand-400);
+
+  --focus-ring:     var(--colors-brand-200);
+
+  /* ---------- Spacing (4-step ramp) ---------- */
+  --space-0:  0rem;
+  --space-4:  0.25rem;
+  --space-8:  0.5rem;
+  --space-12: 0.75rem;
+  --space-16: 1rem;
+  --space-20: 1.25rem;
+  --space-24: 1.5rem;
+  --space-32: 2rem;
+  --space-40: 2.5rem;
+  --space-48: 3rem;
+  --space-56: 3.5rem;
+  --space-64: 4rem;
+  --space-72: 4.5rem;
+  --space-80: 5rem;
+
+  /* ---------- Radii ---------- */
+  --radius-2: 0.125rem;  /* 2px — checkbox */
+  --radius-3: 0.1875rem; /* 3px — badge */
+  --radius-4: 0.25rem;   /* 4px — DEFAULT (button, input, tag, alert) */
+  --radius-8: 0.5rem;    /* 8px — toast, dialog, navbar items */
+  --radius-pill: 9999px;
+  --radius-full: 50%;
+
+  /* ---------- Elevation ---------- */
+  --shadow-1: 0px 2px 8px 0px rgba(0, 22, 78, 0.10);          /* card / rounded button / toast */
+  --shadow-2: 0px 3px 13px 0px rgba(0, 0, 0, 0.06);           /* navbar */
+  --shadow-3: 0rem 0.5rem 1.5rem rgba(0, 22, 78, 0.15);       /* dialog */
+  --box-shadow-1: var(--shadow-1);
+
+  /* ---------- Z-index ---------- */
+  --catalyst-zindex-cascader: 9999;
+  --catalyst-zindex-drawer:   9999;
+  --catalyst-zindex-popper:   999999;
+  --catalyst-zindex-popover:  9999;
+
+  /* ---------- Type ---------- */
+  --catalyst-font-family: "Inter", system-ui, sans-serif;
+  --font-sans: var(--catalyst-font-family);
+  --font-mono: "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace;
+
+  /* Type ramp — exact values from Typography.module.css */
+  --type-title-md-size:       1.25rem;     /* 20px */
+  --type-title-md-line:       1.875rem;    /* 30px */
+  --type-title-md-weight:     600;
+  --type-title-md-tracking:   0.016rem;
+
+  --type-title-sm-size:       1rem;        /* 16px */
+  --type-title-sm-line:       1.5rem;      /* 24px */
+  --type-title-sm-weight:     600;
+  --type-title-sm-tracking:   0.015625rem;
+
+  --type-body-size:           0.875rem;    /* 14px */
+  --type-body-line:           1.25rem;     /* 20px */
+  --type-body-weight:         400;
+  --type-body-bold-weight:    500;
+  --type-body-tracking:       0.009375rem;
+
+  --type-label-sm-size:       0.75rem;     /* 12px */
+  --type-label-sm-line:       1rem;        /* 16px */
+  --type-label-sm-weight:     500;
+  --type-label-sm-bold-weight: 600;
+  --type-label-sm-tracking:   0.015625rem;
+
+  --type-overline-size:       0.625rem;    /* 10px */
+  --type-overline-line:       0.75rem;     /* 12px */
+  --type-overline-weight:     600;
+  --type-overline-tracking:   0.09375rem;
+
+  --colors-selected-background: var(--colors-neutral-700);
+  --colors-selected-color:      var(--colors-neutral-100);
+  --colors-hover-background:    var(--colors-neutral-300);
+  --colors-hover-color:         var(--colors-neutral-800);
+  --colors-outline-color:       var(--colors-brand-300);
+}
+
+/* ============================================================
+   Semantic element styles
+   ============================================================ */
+html, body {
+  font-family: var(--font-sans);
+  color: var(--fg-primary);
+  background: var(--bg-app);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+  letter-spacing: var(--type-body-tracking);
+}
+
+h1, .h1 {
+  font-family: var(--font-sans);
+  font-weight: var(--type-title-md-weight);
+  font-size: var(--type-title-md-size);
+  line-height: var(--type-title-md-line);
+  letter-spacing: var(--type-title-md-tracking);
+  color: var(--fg-primary);
+  margin: 0;
+}
+
+h2, .h2, .title-md {
+  font-weight: var(--type-title-md-weight);
+  font-size: var(--type-title-md-size);
+  line-height: var(--type-title-md-line);
+  letter-spacing: var(--type-title-md-tracking);
+  color: var(--fg-primary);
+  margin: 0;
+}
+
+h3, .h3, .title-sm {
+  font-weight: var(--type-title-sm-weight);
+  font-size: var(--type-title-sm-size);
+  line-height: var(--type-title-sm-line);
+  letter-spacing: var(--type-title-sm-tracking);
+  color: var(--fg-primary);
+  margin: 0;
+}
+
+p, .body {
+  font-weight: var(--type-body-weight);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+  letter-spacing: var(--type-body-tracking);
+  color: var(--fg-primary);
+  margin: 0;
+}
+
+.body-bold {
+  font-weight: var(--type-body-bold-weight);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+  letter-spacing: var(--type-body-tracking);
+}
+
+.label-sm {
+  font-weight: var(--type-label-sm-weight);
+  font-size: var(--type-label-sm-size);
+  line-height: var(--type-label-sm-line);
+  letter-spacing: var(--type-label-sm-tracking);
+}
+
+.label-sm-bold {
+  font-weight: var(--type-label-sm-bold-weight);
+  font-size: var(--type-label-sm-size);
+  line-height: var(--type-label-sm-line);
+  letter-spacing: var(--type-label-sm-tracking);
+}
+
+.overline-sm {
+  font-weight: var(--type-overline-weight);
+  font-size: var(--type-overline-size);
+  line-height: var(--type-overline-line);
+  letter-spacing: var(--type-overline-tracking);
+  text-transform: uppercase;
+}
+
+a, .link {
+  color: var(--fg-link);
+  text-decoration: none;
+}
+a:hover { color: var(--colors-brand-500); }
+a:active { color: var(--colors-brand-600); }
+
+code, .mono {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+}
