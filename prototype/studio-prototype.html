@@ -56,8 +56,12 @@
   /* ---- Body ---- */
   .bodyrow{flex:1;display:flex;min-height:0;}
   .ai{width:300px;flex:0 0 300px;background:var(--sf);border-right:1px solid var(--bdr);display:flex;flex-direction:column;min-height:0;position:relative;overflow:hidden;transition:width 200ms ease,flex-basis 200ms ease;}
-  .ai.collapsed{width:40px;flex-basis:40px;}
-  .ai.collapsed .title,.ai.collapsed .ai-stream,.ai.collapsed .composer{display:none;}
+  .ai.collapsed{width:40px;flex-basis:40px;border-right:1px solid #E5E7EB;}
+  .ai.collapsed .ai-head,.ai.collapsed .ai-stream,.ai.collapsed .composer{display:none;}
+  .ai-cid{display:none;}
+  .ai.collapsed .ai-cid{display:flex;flex-direction:column;align-items:center;gap:14px;padding-top:18px;height:100%;cursor:pointer;}
+  .ai-cid .lbl{font-size:10px;color:#9CA3AF;letter-spacing:1px;white-space:nowrap;transform:rotate(90deg);transform-origin:center;margin-top:8px;}
+  .ai-cid .spk{font-size:12px;color:#9CA3AF;}
   .main{flex:1;display:flex;flex-direction:column;min-width:0;}
 
   /* ---- AI panel ---- */
@@ -124,9 +128,11 @@
   .contentrow{flex:1;display:flex;min-height:0;}
   .sidebar{width:200px;flex:0 0 200px;min-width:200px;background:var(--sf);border-right:1px solid var(--bdr);padding:8px;overflow:auto;transition:width 200ms ease,flex-basis 200ms ease,min-width 200ms ease;}
   .sidebar.cfg{width:160px;flex-basis:160px;min-width:160px;}
-  .sidebar.collapsed{width:26px;flex-basis:26px;min-width:26px;padding:6px 0;overflow:hidden;}
-  .sidebar.collapsed .s-head .nm,.sidebar.collapsed .s-link,.sidebar.collapsed .s-sec,.sidebar.collapsed .s-item,.sidebar.collapsed .s-label{display:none;}
-  .sidebar.collapsed .s-head{justify-content:center;padding:6px 0;}
+  .sidebar.collapsed{width:32px;flex-basis:32px;min-width:32px;padding:0;overflow:hidden;border-left:1px solid #E5E7EB;}
+  .sidebar.collapsed .s-head,.sidebar.collapsed .s-link,.sidebar.collapsed .s-sec,.sidebar.collapsed .s-item,.sidebar.collapsed .s-label{display:none;}
+  .s-cid{display:none;}
+  .sidebar.collapsed .s-cid{display:flex;align-items:center;justify-content:center;height:100%;cursor:pointer;}
+  .sidebar.collapsed .s-cid span{font-size:9px;color:#9CA3AF;letter-spacing:1px;white-space:nowrap;transform:rotate(-90deg);}
   .canvas{flex:1;overflow:auto;background:var(--sf);min-width:0;}
   .canvas.muted{background:var(--mute);}
 
@@ -201,6 +207,12 @@
   .td{padding:0 14px;display:flex;align-items:center;gap:8px;font-size:var(--t-body);color:var(--tx);}
   .td.name{flex:1;font-size:var(--t-head);font-weight:600;color:var(--hd);}
   .tr.head .td{font-size:var(--t-label);font-weight:600;color:var(--mu);}
+  .tr.hl{background:#EFF6FF;}
+  .tr.subrow{border-bottom:1px solid var(--bdr);}
+  .xchip{display:inline-flex;align-items:center;gap:5px;border:1px solid #BFDBFE;background:#EFF6FF;color:#1D4ED8;font-size:10px;font-weight:500;padding:3px 8px;border-radius:6px;}
+  .xcallout{border-left:3px solid #3B82F6;background:#F8FAFF;padding:10px 14px;display:flex;flex-direction:column;gap:4px;}
+  .xcallout .lab{font-size:10px;font-weight:600;color:#1D4ED8;letter-spacing:.5px;}
+  .xcallout .txt{font-size:11px;color:var(--tx);line-height:1.45;}
 
   /* caption / hint */
   .hintbar{position:fixed;left:12px;bottom:10px;background:rgba(26,26,26,.85);color:#fff;font-size:10px;padding:6px 10px;border-radius:6px;z-index:50;pointer-events:none;}
@@ -224,7 +236,8 @@
     "1C":"1C · Workflow + child. Sidebar shows steps; open the Rule Editor from the parent.",
     "1D":"1D · Live read-only. Banner gates edits. Dev node / Create draft → back to Development.",
     "RE":"Rule Editor — set_name_and_complete. AI conversation (added a PII condition).",
-    "CFG":"Configs — App Settings level (160px secondary sidebar). Business Units table."
+    "CFG":"Configs — App Settings level (160px secondary sidebar). Business Units table.",
+    "XREF":"Cross-reference case — Engagement record showing dependency from Subcontractor Form rule."
   };
 
   // ---------------- region renderers ----------------
@@ -233,8 +246,8 @@
     let nodes="";
     STEPS.forEach((s,i)=>{
       const isCur=s===cur;
-      const dotStyle=isCur?`background:${ENV_DOT[s]};`:"";
-      const dotCls=isCur?"dot":"dot outline";
+      const dotStyle=isCur?`background:${ENV_DOT[s]};`:`border:1.5px solid ${ENV_DOT[s]};`;
+      const dotCls="dot";
       let nav="";
       if(s==="Live"&&!isCur) nav='data-nav="1D" class="pnode clickable"';
       else if(s==="Dev"&&cur==="Live") nav='data-nav="1B" class="pnode clickable"';
@@ -258,7 +271,11 @@
     let tabs="";
     tabs+=`<div class="tab ${cfg.id==="1A"?"active":""}" data-nav="1A"><span class="ic">⌂</span>Home</div>`;
     if(cfg.id!=="1A"){
-      tabs+=`<div class="tab active" data-nav="1B"><span class="ic">▦</span>Mayo Client App<span class="x" data-nav="1A">✕</span></div>`;
+      const mayoActive=!cfg.objTab;
+      tabs+=`<div class="tab ${mayoActive?"active":""}" data-nav="1B"><span class="ic">▦</span>Mayo Client App<span class="x" data-nav="1A">✕</span></div>`;
+      if(cfg.objTab){
+        tabs+=`<div class="tab active" data-nav="${cfg.id}"><span class="ic">▤</span>${cfg.objTab}<span class="x" data-nav="1B">✕</span></div>`;
+      }
     }
     tabs+=`<div class="newtab">+</div>`;
     return `<div class="tabstrip">${tabs}</div>`;
@@ -286,7 +303,7 @@
       stream="";
     } else {
       if(cfg.ctx) stream+=`<div class="ctx">${cfg.ctx}</div>`;
-      stream+=`<div class="sug"><div class="lbl"><span class="sparkle">✦</span>SUGGESTION</div><div class="txt">${cfg.sug}</div>`+
+      if(cfg.sug) stream+=`<div class="sug"><div class="lbl"><span class="sparkle">✦</span>SUGGESTION</div><div class="txt">${cfg.sug}</div>`+
         (cfg.sugBtn?`<div class="acts"><div class="btn-dark">${cfg.sugBtn}</div><div class="btn-ghost">Dismiss</div></div>`:"")+`</div>`;
       if(cfg.exchange){
         cfg.exchange.forEach(m=>{
@@ -295,6 +312,7 @@
             (m.edit?`<div class="editcard"><i class="dot" style="background:var(--hd)"></i><span class="et">${m.edit}</span><span class="rev">↺ Revert</span></div>`:"")+`</div>`;
         });
       }
+      if(cfg.actionBtn) stream+=`<div class="sug"><div class="acts"><div class="btn-dark" data-nav="${cfg.actionBtn.nav}">${cfg.actionBtn.label}</div></div></div>`;
     }
     let composer="";
     const input=`<div class="inputbox"><div class="ph">${cfg.activeComposer?"Reply or add to this task…":"Ask or instruct…"}</div>
@@ -312,7 +330,8 @@
         </div></div>`;
     }
     return `<div class="ai${aiCollapsed?" collapsed":""}">
-      <div class="ai-head"><span class="sparkle">✦</span><span class="title">Studio AI</span><span class="col" data-act="ai">${aiCollapsed?"»":"«"}</span></div>
+      <div class="ai-cid" data-act="ai" title="Expand AI panel"><span class="lbl">AI</span><span class="spk">✦</span></div>
+      <div class="ai-head"><span class="sparkle">✦</span><span class="title">Studio AI</span><span class="col" data-act="ai" title="Collapse AI panel">${aiCollapsed?"»":"«"}</span></div>
       <div class="ai-stream">${stream}</div>
       <div class="composer">${composer}${input}</div>
     </div>`;
@@ -324,8 +343,9 @@
     const tg=sideCollapsed?"‹":"›";
     if(cfg.sidebar==="sra"){
       return `<div class="sidebar${cc}">
+        <div class="s-cid" data-act="side" title="Expand panel"><span>STEPS</span></div>
         <div class="s-link" data-nav="1B">⤴ Parent: Subcontractor Form →</div>
-        <div class="s-head"><span class="nm">Subcontractor Risk Assessment</span><span class="col" data-act="side">${tg}</span></div>
+        <div class="s-head"><span class="nm">Subcontractor Risk Assessment</span><span class="col" data-act="side" title="Collapse panel">${tg}</span></div>
         <div class="s-sec"><span class="tri">▾</span><span class="gl">◇</span><span class="nm">Steps</span><span class="chip">3</span></div>
         <div class="s-item sel"><span class="gl">◇</span><span class="lbl">Risk Data</span></div>
         <div class="s-item"><span class="gl">◇</span><span class="lbl">Scoring</span></div>
@@ -334,7 +354,8 @@
     }
     if(cfg.sidebar==="rules"){
       return `<div class="sidebar${cc}">
-        <div class="s-head"><span class="nm">Subcontractor Form</span><span class="col" data-act="side">${tg}</span></div>
+        <div class="s-cid" data-act="side" title="Expand panel"><span>RULES</span></div>
+        <div class="s-head"><span class="nm">Subcontractor Form</span><span class="col" data-act="side" title="Collapse panel">${tg}</span></div>
         <div class="s-label">RULES</div>
         <div class="s-item sel"><span class="gl">◇</span><span class="lbl">set_name_and_complete</span></div>
         <div class="s-item"><span class="gl">◇</span><span class="lbl">route_to_risk_questionnaire</span></div>
@@ -389,7 +410,7 @@
         <div class="sec2">RECORDS<span class="grow"></span><span class="chip">6</span></div>
         <div class="listcol">
           <div class="li"><span class="gl">▤</span><span class="nm">External Party</span><span class="mt">67 attributes</span></div>
-          <div class="li"><span class="gl">▤</span><span class="nm">Engagement</span><span class="mt">32 attributes</span></div>
+          <div class="li ${readonly?"":"click"}" ${readonly?"":'data-nav="XREF"'}><span class="gl">▤</span><span class="nm">Engagement</span><span class="mt">32 attributes</span></div>
         </div>
       </div></div>`;
   }
@@ -444,6 +465,28 @@
       </div></div>`;
   }
 
+  function canvasXref(){
+    const td=(t,w,name)=>`<div class="td${name?" name":""}"${w?` style="flex:0 0 ${w}px;width:${w}px"`:""}>${t}</div>`;
+    return `<div class="canvas">
+      <div class="c-head"><div class="crumbs">
+        <div class="crumbrow"><span class="lk" data-nav="1B">Mayo Client App</span><span>›</span><span class="lk" data-nav="1B">Records</span><span>›</span><span class="here">Engagement</span></div>
+        <div class="crumbrow"><span class="ttl" style="font-size:var(--t-title);color:var(--hd);font-weight:600">Engagement</span><span class="sub">· Record · 32 attributes</span></div>
+      </div></div>
+      <div class="c-body">
+        <div class="sec2">ATTRIBUTES<span class="grow"></span><span class="chip">showing 5 of 32</span></div>
+        <div class="tbl">
+          <div class="tr head">${td("Attribute",0,true)}${td("Type",170)}${td("Value",240)}</div>
+          <div class="tr hl">${td("Status",0,true)}${td("Dropdown",170)}${td("Active",240)}</div>
+          <div class="tr hl subrow"><div class="td" style="flex:1"><span class="xchip">⚡ Referenced in rule: set_name_and_complete → Subcontractor Form</span></div></div>
+          <div class="tr">${td("Client Name",0,true)}${td("Text",170)}${td("Mayo Corp",240)}</div>
+          <div class="tr">${td("Contract Value",0,true)}${td("Currency",170)}${td("$240,000",240)}</div>
+          <div class="tr">${td("Risk Score",0,true)}${td("Number",170)}${td("74",240)}</div>
+          <div class="tr">${td("Assigned To",0,true)}${td("User",170)}${td("Sarah Chen",240)}</div>
+        </div>
+        <div class="xcallout"><span class="lab">CROSS-REFERENCE</span><span class="txt">This field is used as a condition in Subcontractor Form › Rules › set_name_and_complete. Changes to this attribute may affect active rules.</span></div>
+      </div></div>`;
+  }
+
   function canvasFor(cfg){
     switch(cfg.canvas){
       case "dash": return canvasDash();
@@ -452,6 +495,7 @@
       case "child": return canvasChild();
       case "rule": return canvasRule();
       case "configs": return canvasConfigs();
+      case "xref": return canvasXref();
     }
     return "";
   }
@@ -469,7 +513,11 @@
       exchange:[{role:"user",text:"Only run this when the PII toggle is On."},
                 {role:"ai",text:"Done — added a condition to set_name_and_complete: it now runs only when “Subcontractor handles client PII” is On.",edit:"Condition added · PII toggle is On"}]},
     "CFG":{id:"CFG",env:"Dev",ai:"std",subnav:{active:"Configs"},sidebar:"cfg",canvas:"configs",
-      ctx:"✦ Configs · Business Units",sug:"Vendor BU is referenced by 6 workflow assignee rules — changes here will affect those rules.",sugBtn:"Show workflows"}
+      ctx:"✦ Configs · Business Units",sug:"Vendor BU is referenced by 6 workflow assignee rules — changes here will affect those rules.",sugBtn:"Show workflows"},
+    "XREF":{id:"XREF",env:"Dev",ai:"std",objTab:"Engagement",subnav:{active:"Records"},canvas:"xref",
+      ctx:"✦ Engagement · Records",
+      exchange:[{role:"ai",text:"Status is referenced from Subcontractor Form rule set_name_and_complete. If you change this attribute type, that rule's condition will break."}],
+      actionBtn:{label:"View the rule",nav:"RE"}}
   };
 
   function renderFrame(cfg){
