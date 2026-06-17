@@ -56,12 +56,12 @@
   /* ---- Body ---- */
   .bodyrow{flex:1;display:flex;min-height:0;}
   .ai{width:300px;flex:0 0 300px;background:var(--sf);border-right:1px solid var(--bdr);display:flex;flex-direction:column;min-height:0;position:relative;overflow:hidden;transition:width 200ms ease,flex-basis 200ms ease;}
-  .ai.collapsed{width:40px;flex-basis:40px;border-right:1px solid #E5E7EB;}
+  .ai.collapsed{width:40px;flex-basis:40px;border-right:1px solid #E5E7EB;background:#F9FAFB;overflow:visible;}
   .ai.collapsed .ai-head,.ai.collapsed .ai-stream,.ai.collapsed .composer{display:none;}
   .ai-cid{display:none;}
-  .ai.collapsed .ai-cid{display:flex;flex-direction:column;align-items:center;gap:14px;padding-top:18px;height:100%;cursor:pointer;}
-  .ai-cid .lbl{font-size:10px;color:#9CA3AF;letter-spacing:1px;white-space:nowrap;transform:rotate(90deg);transform-origin:center;margin-top:8px;}
-  .ai-cid .spk{font-size:12px;color:#9CA3AF;}
+  .ai.collapsed .ai-cid{display:flex;flex-direction:column;align-items:center;gap:10px;padding-top:16px;height:100%;cursor:pointer;overflow:visible;}
+  .ai-cid .lbl{writing-mode:vertical-rl;text-orientation:mixed;font-size:10px;font-weight:500;color:#6B7280;letter-spacing:0.06em;}
+  .ai-cid .spk{font-size:12px;color:#6B7280;}
   .main{flex:1;display:flex;flex-direction:column;min-width:0;}
 
   /* ---- AI panel ---- */
@@ -128,11 +128,11 @@
   .contentrow{flex:1;display:flex;min-height:0;}
   .sidebar{width:200px;flex:0 0 200px;min-width:200px;background:var(--sf);border-right:1px solid var(--bdr);padding:8px;overflow:auto;transition:width 200ms ease,flex-basis 200ms ease,min-width 200ms ease;}
   .sidebar.cfg{width:160px;flex-basis:160px;min-width:160px;}
-  .sidebar.collapsed{width:32px;flex-basis:32px;min-width:32px;padding:0;overflow:hidden;border-left:1px solid #E5E7EB;}
+  .sidebar.collapsed{width:32px;flex-basis:32px;min-width:32px;padding:0;overflow:visible;border-left:1px solid #E5E7EB;background:#F9FAFB;}
   .sidebar.collapsed .s-head,.sidebar.collapsed .s-link,.sidebar.collapsed .s-sec,.sidebar.collapsed .s-item,.sidebar.collapsed .s-label{display:none;}
   .s-cid{display:none;}
-  .sidebar.collapsed .s-cid{display:flex;align-items:center;justify-content:center;height:100%;cursor:pointer;}
-  .sidebar.collapsed .s-cid span{font-size:9px;color:#9CA3AF;letter-spacing:1px;white-space:nowrap;transform:rotate(-90deg);}
+  .sidebar.collapsed .s-cid{display:flex;align-items:center;justify-content:center;height:100%;cursor:pointer;overflow:visible;}
+  .sidebar.collapsed .s-cid span{writing-mode:vertical-rl;text-orientation:mixed;font-size:10px;font-weight:500;color:#6B7280;letter-spacing:0.06em;}
   .canvas{flex:1;overflow:auto;background:var(--sf);min-width:0;}
   .canvas.muted{background:var(--mute);}
 
@@ -246,7 +246,7 @@
     let nodes="";
     STEPS.forEach((s,i)=>{
       const isCur=s===cur;
-      const dotStyle=isCur?`background:${ENV_DOT[s]};`:`border:1.5px solid ${ENV_DOT[s]};`;
+      const dotStyle=isCur?`background:${ENV_DOT[s]};border:none;`:`background:transparent;border:1.5px solid ${ENV_DOT[s]};`;
       const dotCls="dot";
       let nav="";
       if(s==="Live"&&!isCur) nav='data-nav="1D" class="pnode clickable"';
@@ -277,7 +277,6 @@
         tabs+=`<div class="tab active" data-nav="${cfg.id}"><span class="ic">▤</span>${cfg.objTab}<span class="x" data-nav="1B">✕</span></div>`;
       }
     }
-    tabs+=`<div class="newtab">+</div>`;
     return `<div class="tabstrip">${tabs}</div>`;
   }
 
