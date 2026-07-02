@@ -1,187 +1,209 @@
-# H. Change-First Governance Model — extensions to the Nav Model & AI Placement decision
+# H. Proposal-First Governance Model — extensions to the Nav Model & AI Placement decision
 
 > **Companion to** the Notion doc *"Studio: Nav Model & AI Placement"* (Design Tracker · Product).
-> Once the strategic frame (Model 1 — scoped copilot, high prominence) was accepted, we extended
-> the pattern in five specific ways. This document captures those extensions, the open decisions,
-> and the artifacts that materialize them.
+>
+> **v2 — post-PM-sync (July 2026).** After presenting v1 to the PM, three revisions came back that reshape the surface but not the intent:
+> 1. **Naming:** "Change" is out. Container entity is now **Proposal**.
+> 2. **Detail access:** modal is out. Proposal detail opens as a **tab**, so the AI can live inside it as a first-class companion.
+> 3. **Chrome model:** the persistent left sidebar (220px) AND the icon rail (56px) are eliminated. Everything opens as a tab; the entry point is a **Launchpad** page reached via `+ new tab`.
 
 ---
 
-## Recap — what the Notion doc already resolved
+## Recap — Model 1 direction (unchanged)
 
-- **Two-axis frame:** Scope (global operator ↔ scoped copilot) × Prominence (dock ↔ first-class ↔ dominant).
-- **Verdict — Model 1:** Nav left constant · AI scoped in-app · Canvas right. A copilot on Axis 1, high prominence on Axis 2 — more prominent than Cursor / Linear grant it, but not a global operator.
-- **Validated patterns** (cut across any layout): canvas = source of truth · JSON as a view (Preview ⇄ JSON toggle + co-visible diff) · nav collapsible to an icon rail · app-driven adaptive sizing · per-action traceability · draft/CR = git, named as such.
-- **Current-state problems the doc calls out and this document builds on:** browser-style tab proliferation · flat lists with no search · cryptic names (`rule_RvqUs8ENlWgnM02lDuVn_`, drafts by timestamp) · 49 ungovernable drafts · wall of red validation.
+- Two-axis frame (Scope × Prominence) → **scoped copilot, high prominence** (Model 1) is settled.
+- Validated patterns (canvas = source of truth · JSON as a view · adaptive sizing · per-action traceability · drafts/CRs as git) still apply.
+- Current-state problems the original doc names — tab proliferation, flat lists, cryptic names, 49 ungovernable drafts, wall of red validation — are still what we're addressing.
 
-The strategic direction is settled. This document is the **"what we built on top of it."**
+Model 1's *"scoped copilot"* verdict is the strategic ground. Everything below is how we materialize it in the surface after PM feedback.
 
 ---
 
-## 1. Change-first governance model
+## 1. Proposal — the container entity
 
 ### Problem it addresses
 
-The Notion doc names *"49 ungovernable drafts"* and *"cryptic names"* as symptoms. Named drafts alone is not enough — the missing piece is a **container entity** that groups work as it moves through environments, gives it a lifecycle, and gives the user a single mental unit to track.
+Named drafts alone don't solve *"49 ungovernable drafts"*. What's missing is a container entity that groups work as it moves through environments, gives it a lifecycle, and gives the user a single mental unit to track.
 
 ### Model
 
-- A **Change** is a first-class ticket owned by one person, with a lifecycle:
+- A **Proposal** is a first-class ticket owned by one person, with a lifecycle:
 
   ```
   Open → In progress → In review → Approved → Merged → Live
   ```
 
-- A Change contains N **Change Requests (CRs)**, one per environment it touches (Dev → QA → Pre-Live → Live). The existing CR entity stays intact; it becomes a sub-step of a Change.
-- The **draft entity stays alive** — a Change adopts a draft per env, and the draft's ID (e.g., `DEV-5430`) is auto-generated from the Change name instead of a timestamp. This kills the `studio-2335` / `test m1` / `check revert` proliferation at the source (creation flow) without breaking existing drafts.
+- A Proposal contains N **Change Requests (CRs)**, one per environment it touches (Dev → QA → Pre-Live → Live). The existing CR entity stays intact; a CR is now a sub-step of a Proposal.
+- The **draft entity stays alive** — a Proposal adopts a draft per env, and the draft's ID (e.g., `DEV-5430`) is auto-generated from the Proposal name instead of a timestamp. This kills the `studio-2335` / `test m1` / `check revert` proliferation at the source (creation flow) without breaking existing drafts.
 
-### Impact on the topbar (visible today)
+### Why "Proposal" and not "Change" or "Issue"
 
-The three previous dropdowns collapse into two, contextual and legible:
+- **"Change"** was v1's naming. Rejected because it is too generic (every workflow edit is a change) and collides mentally with "Change Request" (a Proposal *has* Change Requests but is not one).
+- **"Issue"** was the fallback (GitHub / Linear convention). Rejected because it reads as a bug or complaint in a compliance / GRC context.
+- **"Proposal"** wins:
+  - Coherent with governance vocabulary. *"Sarah is reviewing my Proposal"* reads natural.
+  - Doesn't collide with Change Request. A Proposal *proposes* changes; each CR *implements* the proposal in a specific environment.
+  - Implies review lifecycle organically — a Proposal is inherently something you formalize, submit, get reviewed.
 
-| Before | After |
-|---|---|
-| `● Dev · Testing Ch ▾` (env pill) | `Change: Add PII condition · In review ▾` (Change pill) |
-| `Review Pending ▾` | *(merged into Change pill sub-badge)* |
-| `Merge & Deploy ▾` | `Promote → QA ▾` (contextual to lifecycle stage) |
+### Zero data-model changes
 
-### Cost
-
-**Zero data-model changes.** Reframing + one new container entity on top of what already exists.
-
----
-
-## 2. Topbar → Modal (system rule)
-
-### The rule
-
-Anything that opens from the topbar or its dropdowns opens as a **modal**, not as a full-page destination and not as a right-panel state-swap.
-
-### Applies to
-
-- Change detail (from Change pill or from Open Changes list rows) — implemented
-- Future: Review Pending detail · Merge & Deploy confirmation · `...` overflow (App Settings, Env Overrides, Activity Logs)
-
-### Why
-
-- Topbar is chrome. Its outputs are transient overlays — you look/act, dismiss, resume where you were.
-- One rule for users to learn (*"if it came from the topbar, X closes it"*), not per-item behaviors.
-- Preserves context: the App Overview or the workflow being edited stays visible behind the backdrop.
-
-### Modal spec
-
-- 90% viewport width (max 1280px) · 85% viewport height
-- Backdrop `rgba(0,0,0,0.4)`
-- Close via `X` button (top-right) · `ESC` key · backdrop click
-- Own scroll if content exceeds body height
-- Optional right-side **AI drawer** inside the modal (contextual chips for the current Change) — spec'd, not yet built
+Reframing + one new container entity on top of what already exists.
 
 ---
 
-## 3. Overview sub-tabs — Summary / Insights / Activity
+## 2. Tab-first navigation — the new chrome model
 
-Same pattern as workflow's `Preview / Rules / JSON` — alternative **views of one object** (the app), not separate tabs at the browser level. Consolidates the "app overview" from a single dashboard into three densities.
+### What we eliminated
+
+- **The 220px workflow sidebar.** Was showing a long flat list of workflows, mixing types with configs.
+- **The 56px icon rail** (S logo + 4 object-type icons). Merged into the topbar as a compact identity mark.
+- **The "Change pill" in the topbar.** Was a parallel context indicator competing with the tab strip, and split behavior between "click text" and "click ▾" — a UX anti-pattern.
+- **The "Promote → QA" button in the global topbar.** Moved into the Proposal tab where it belongs.
+
+### What we kept
+
+- **The topbar** (48px), now minimal.
+  - Left: `[S] Mayo Client App ▾`
+  - Right: notifications only. Everything else migrated to tabs.
+- **The tab strip** — first-class navigation surface. Every object opens as a tab.
+- **The AI panel** — still a first-class second element inside object tabs, adaptive by state (see §5).
+
+### What we added — the Launchpad
+
+The `+ new tab` icon in the tab strip opens the **Launchpad**: a full-canvas page whose job is to be the entry point to everything.
+
+**Launchpad structure (top to bottom):**
+
+1. **AI-first hero.** Big centered input (`Ask, find, or create…`) with 4 suggestion chips. The primary action of the page.
+2. **Recent** — 4 rows of last-touched objects (workflows, records, proposals).
+3. **Object categories** — 2×2 grid of Workflows / Records / Connectors / Configs cards, each with top items + count + expand link.
+4. **Open Proposals** — bottom section, 5 rows with status pill / owner / age.
+
+**Behavior:**
+- Click any row/card → opens as a new tab. The `+ New tab` tab is replaced by the opened object; a fresh `+` icon appears at the far right of the tab strip.
+- `⌘K` focuses the hero search input.
+- Click on `[S]` badge → back to Dashboard (all-apps view). Doesn't affect open tabs.
+- Click on `Mayo Client App ▾` → app switcher dropdown.
+
+### Why this is better than the sidebar
+
+- **~276px more canvas** (sidebar 220 + rail 56 = 276 recovered).
+- **Single mental model.** Everything is a tab. No modals for "detail views", no swap states.
+- **AI-first.** The Launchpad puts the AI input as the primary action — every "+" opens on an AI prompt.
+- **Familiar semantics** for a technical builder (Cursor / VSCode / Chrome tab-strip pattern).
+
+---
+
+## 3. Proposal detail — a tab, not a modal
+
+A Proposal opens as a tab. Its content:
+
+- **Sticky header inside the tab:**
+
+  ```
+  Proposal #461 · Add PII condition · In review     [Promote → QA ▾]
+  ```
+
+  The Promote button lives here — pegged to the object it acts on. Actions travel with their objects.
+
+- **Body:** Lifecycle stepper · Change Requests by environment (with draft IDs like `DEV-5430`) · Scope + Activity two-column.
+
+- **AI panel** — first-class right column inside the Proposal tab. State = **Review** (see §5).
+
+### Entry points to a Proposal (multiple, all consistent)
+
+- **Overview → Open Proposals** section → click a row
+- **Launchpad → Open Proposals** section → click a row
+- **⌘K** → search by number or name → Enter
+- **Recent Activity** → click any `Proposal #461` reference
+- **Notifications** → click the Proposal link
+
+All open the same tab. No dropdowns, no dual-behavior pills, no context switches.
+
+### Management actions
+
+- **Close a Proposal tab** → the `×` on the tab (browser-native).
+- **Copy link / share** → `⋯` icon in the tab's own top-right, next to the Promote button.
+- **Switch between Proposals** → click a different tab, or `⌘⇧←/→`.
+
+Each action has one place and one behavior.
+
+---
+
+## 4. Overview sub-tabs — Summary / Insights / Activity
+
+Same pattern as workflow's `Preview / Rules / JSON` — alternative views of one object (the app), not separate tabs at the browser level.
 
 | Sub-tab | Purpose | Content |
 |---|---|---|
-| **Summary** | Day-to-day glance | Stats · Pipeline · Open changes (top 5) · Recent activity (top 5) |
+| **Summary** | Day-to-day glance | Stats · Pipeline · Open Proposals (top 5) · Recent activity (top 5) |
 | **Insights** | Situation room | People · Health · Environments · Proactive suggestions with inline actions |
-| **Activity** | Timeline archive | Filterable feed (Changes / Deploys / Comments / AI runs) with search + Load more |
-
-### Why this matters
-
-The original Notion doc's honest trade-off was *"the dashboard loses AI assistance."* Sub-tabs resolve that indirectly: the App Overview becomes rich enough to be its own destination without needing AI assistance at the org level. The AI moves into a **companion** role (see §4), not a dashboard operator.
+| **Activity** | Timeline archive | Filterable feed (Proposals / Deploys / Comments / AI runs) with search + Load more |
 
 ---
 
-## 4. AI state-awareness — three states, one component
+## 5. AI state-awareness — one component, five states
 
-The Notion doc's Model 1 verdict specifies *"a prominent, app-scoped copilot… first-class, adaptive panel."* This section makes "adaptive" concrete.
-
-**The chrome stays constant** (panel position, input, style). **The content adapts to context.**
+The chrome stays constant (panel position, input, style). The content adapts to context.
 
 | Context | State | Content |
 |---|---|---|
-| App Overview | **Discovery** | Memory line (*"You've been working on Subcontractor Form"*) · Recent AI activity · Exploratory chips (*"Summarize compliance risks"* · *"Explain the current Change diff"* · *"What did I ask about yesterday?"*) |
-| Workflow open, no active task | **Ready** | Empty state + 3 workflow-specific chips (*"What does this workflow do?"* · *"Suggest improvements"* · *"Check for issues"*) |
-| Workflow with active AI task | **Execution** | Task card with actions history (*"9 actions taken · Show all"*) · Diff pills (`+ Added Field · Company Name`) · Inline suggestion with Apply / Dismiss |
+| App Overview | **Discovery** | Memory line (*"You've been working on X"*) · Recent AI activity · Exploratory chips |
+| Workflow tab open, no active task | **Ready** | Empty state + 3 workflow-specific chips |
+| Workflow tab with active AI task | **Execution** | Task card with actions history · Diff pills · Inline suggestion with Apply / Dismiss |
+| Proposal tab open | **Review** | Chips: *"Summarize the diff"* · *"Suggest reviewers"* · *"Check compliance risks"* · Input: *"Ask about this Proposal…"* |
+| Launchpad open | **Command** | Hero input replaces the side panel entirely — the Launchpad **is** an AI-first surface |
 
 ### Coherence rule
 
-The AI's content must always match the object visible in the canvas. Cross-context leaks (e.g., Subcontractor Form's task showing while OIS Device Details is open in the canvas) are **bugs, not features**.
+The AI's content must always match the object in the currently active tab. Cross-context leaks (e.g., Subcontractor Form's task showing while OIS Device Details is active) are bugs, not features.
 
 ### Why this differentiates from Cursor / Copilot
 
-- Cursor / Copilot AI is scoped to the *open file* and reactive.
-- Studio AI is scoped to the *app* and **proactive on discovery** (Insights-adjacent surfacing), **contextual on execution** (workflow tasks), and **carrying memory across sessions** ("You asked me last week about connector renewals").
+- Cursor / Copilot AI is scoped to the open file and reactive.
+- Studio AI is scoped to the app and **proactive on Discovery** (Launchpad + Overview Insights), **contextual on Execution** (workflow tabs), **review-oriented on Review** (Proposal tabs), and **carrying memory across sessions**.
 
 ---
 
-## 5. Sidebar consolidation — four object types
+## Open decisions
 
-The current sidebar mixes object types (Workflows, Records, Connectors) with configs (Scheduled Actions, Badges, Workflow Prepopulation Configs, Step Copy Configurations, Object Selection Configs) as flat peers. This is the *"flat lists"* anti-pattern the Notion doc explicitly calls out.
-
-### Proposed structure
-
-```
-Rail (4 items + logo)
-├── S (logo)
-├── ⊞  Workflows
-├── ⊟  Records          ← Badges lives here (they decorate records)
-├── ⌁  Connectors
-└── ⚙  Configs          ← already a parent group in-product
-       ├── Automation
-       │     └── Scheduled Actions
-       └── Behavior
-             ├── Workflow Prepopulation
-             ├── Step Copy
-             └── Object Selection
-```
-
-### Evidence for the grouping
-
-The three `*Configs` share the **exact same indexing schema** — `(WorkflowKind, X-in-workflow, Object)` — visible in the product's own tab breadcrumbs (`Configs › Workflow Prepopulation...`, `Configs › Step Copy Configura...`, `Configs › Object Selection Con...`). We are formalizing a hierarchy that already exists in the data model, just not in the sidebar.
-
-**Badges** was mis-grouped with configs. Investigation of the actual Badges page (Target = Engagement record type, Field = optional) confirms it is **record-decoration metadata**, not behavior config. Correct home is inside Records (as a sub-tab of a record type).
-
-**Scheduled Actions** is temporal automation (fires on a schedule), distinct from the three `*Configs` which are static behavior rules. Grouped under "Automation" within Configs to preserve the parent-child model already in-product while signaling different nature.
-
----
-
-## Open decisions (as of writing)
-
-| Decision | Constraint | Recommendation |
+| Decision | Status | Notes |
 |---|---|---|
-| **Naming** — what to call the new container? | Workflow "Tasks" **cannot** be renamed (hard product constraint). | **"Change"** — coherent with existing *Change Request* language (a Change has N Change Requests). Fallback: **"Issue"** (GitHub / Linear convention). |
-| **Overview AI content** — companion or duplicate? | Insights sub-tab already surfaces proactive insights (Docusign / deprecated / stale drafts). | **Companion** — Recent AI activity + memory line + exploratory chips. Do **not** duplicate Insights data in the AI panel. |
-| **Change detail modal** — AI drawer default? | Modal already has an `✦ Ask AI` link in the header. | **Closed by default.** Opens a 320px right drawer within the modal on demand. Prevents visual crowding for read-only glances. |
+| **Naming** — container entity | ✓ Resolved | **Proposal** |
+| **Detail access pattern** | ✓ Resolved | Tab (with AI as first-class right column) |
+| **Chrome minimalism** | ✓ Resolved | Sidebar + rail removed; Launchpad is the entry point |
+| **Proposal tab AI state name** | Recommendation: **Review** | Awaiting PM confirmation |
+| **App switcher dropdown** — visual design | Open | Needs Claude Design mock |
+| **Tab strip overflow behavior** | Open | Proposal: horizontal scroll + `⋯` overflow menu listing tabs beyond viewport |
 
 ---
 
 ## Artifacts
 
-Live in **Claude Design** (interactive prototype) and **Figma** (`Studio — Navigation Explorations`, file key `Mg3plZn2b0tadSOZAP3ndX`):
+Live in **Claude Design** and **Figma** (`Studio — Navigation Explorations`, file key `Mg3plZn2b0tadSOZAP3ndX`):
 
 - **App Overview** with 3 sub-tabs (Summary / Insights / Activity) — full content specced and rendered
-- **Change detail modal** with lifecycle stepper, CRs per env (with draft IDs — `CR #461 → DEV-5430`, `CR #483 → QA-1207`), Scope + Activity two-column
-- **Change pill + Promote button** in the topbar (three dropdowns → one pill + one action)
-- **Change pill dropdown** (5 options: `↗ Open change details` · `⇄ Switch change` · `👁 View activity` · `🔗 Copy link` · `✕ Close change`)
-- **AI state-aware content** for Discovery / Ready / Execution states
+- **Proposal detail tab** — lifecycle stepper, CRs per env (with draft IDs — `CR #461 → DEV-5430`, `CR #483 → QA-1207`), Scope + Activity two-column, sticky header with Promote → QA. AI panel in Review state.
+- **AI state-aware content** for Discovery / Ready / Execution / Review / Command states
+- **Launchpad (+ New Tab)** — AI-first hero, Recent, object category grid, Open Proposals section
+- **New minimal topbar** — `[S badge] Mayo Client App ▾` · notifications right
 
-Figma file: `https://www.figma.com/design/Mg3plZn2b0tadSOZAP3ndX/Studio-%E2%80%94-Navigation-Explorations`
+Figma file: https://www.figma.com/design/Mg3plZn2b0tadSOZAP3ndX/Studio-%E2%80%94-Navigation-Explorations
 
 ---
 
-## Next steps (post-sync)
+## Next steps (post-v2)
 
-1. **Naming decision from PM** → this document updates in place with the chosen name; find-and-replace `Change` if `Issue` wins.
-2. **Propagate Change language to Dashboard (3.1)** attention strip — replace `3 CRs need your review` with `5 Changes assigned to you`, etc.
-3. **Relabel existing Change Requests page as "Changes list"** — ~80% relabel, not a new build. Same tabs (Review requested / Created by me / All) work as-is; rows become Change-shaped.
-4. **Empty state for Open Changes section** — when the app has no active Changes (empty apps, quiet weeks).
-5. **Design Change detail "AI drawer"** — contextual chips (`Summarize the diff` / `Suggest reviewers` / `Check compliance risks`) inside the modal, on-demand.
-6. **Sync back to Notion** — this doc's `## Update` section into *Studio: Nav Model & AI Placement* under the existing page (append, not replace).
+1. **Sync v2 back to Notion** (`Studio: Nav Model & AI Placement`) — the July 2026 update section needs revision to reflect Proposal + tab-first + Launchpad.
+2. **Design Launchpad in Claude Design** — prompt drafted, next execution.
+3. **Design Proposal detail tab** with AI Review panel.
+4. **Design app switcher dropdown** (`Mayo Client App ▾` open state).
+5. **Design tab strip overflow behavior** (many tabs open).
+6. **Propagate Proposal language** across the product (Dashboard 3.1, Recent Activity, notifications, existing CR references in UI).
+7. **Relabel existing Change Requests page as "Proposals list"** — mostly relabel, not a rebuild.
+8. **Empty state for Open Proposals section** (Overview + Launchpad).
 
 ---
 
 *Owner: Chris Calviño · chris@chriscalvino.com*
-*Draft version 1 — awaiting naming decision from PM sync.*
+*v2 draft — post-PM-sync July 2026.*
