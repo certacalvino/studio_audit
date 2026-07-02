@@ -70,26 +70,47 @@ Reframing + one new container entity on top of what already exists.
 
 ### What we added — the Launchpad
 
-The `+ new tab` icon in the tab strip opens the **Launchpad**: a full-canvas page whose job is to be the entry point to everything.
+The `+ new tab` icon in the tab strip opens the **Launchpad**: a full-canvas page whose job is to be the entry point to everything — search, browse, create, import.
 
 **Launchpad structure (top to bottom):**
 
-1. **AI-first hero.** Big centered input (`Ask, find, or create…`) with 4 suggestion chips. The primary action of the page.
+1. **Find or create — plain search bar.** Not AI-branded. `🔍 Search workflows, records, connectors…` + `⌘K`. Below it, 3 literal shortcuts: `+ New workflow` / `+ New record` / `+ Import`. This is navigation, not conversation — see "AI panel stays put" below for why it's deliberately *not* styled like the AI input.
 2. **Recent** — 4 rows of last-touched objects (workflows, records, proposals).
-3. **Object categories** — 2×2 grid of Workflows / Records / Connectors / Configs cards, each with top items + count + expand link.
-4. **Open Proposals** — bottom section, 5 rows with status pill / owner / age.
+3. **Object categories** — 2×2 grid of Workflows / Records / Connectors / Configs cards, each with top items + count + a `[+ Create]` / `[↥ Import]` icon pair in the card header + expand link.
+4. **Open Proposals** — a single compact link row (`✦ Open Proposals · 5 · View all in Overview →`), not a full list. The full list lives in Overview; the Launchpad only signals it exists.
 
 **Behavior:**
 - Click any row/card → opens as a new tab. The `+ New tab` tab is replaced by the opened object; a fresh `+` icon appears at the far right of the tab strip.
-- `⌘K` focuses the hero search input.
+- `⌘K` focuses the search input.
 - Click on `[S]` badge → back to Dashboard (all-apps view). Doesn't affect open tabs.
 - Click on `Mayo Client App ▾` → app switcher dropdown.
+
+### AI panel stays put — no duplicate AI surface
+
+First pass of the Launchpad put an AI-branded hero in the canvas (`✦ Studio AI` + `Ask, find, or create…` + suggestion chips) *in addition to* the existing left AI panel. That's two AI-looking inputs on one page — confusing, and it duplicates a surface that's already shared chrome across every page (Overview, Workflow tabs, Proposal tabs).
+
+**Fix:** the AI panel is the *only* AI entry point on the Launchpad, same as everywhere else. Its state is **Discovery** (memory line + Recent AI activity + exploratory chips), identical to how it behaves on Overview — there's no separate "Command" state. The canvas gets a plain, non-AI search bar instead (see structure item 1 above). Two distinct interaction modes, two distinct visual languages: **search bar = go somewhere directly; AI panel = think something through.**
+
+### Overview and Launchpad don't share content — by design
+
+Early drafts explored a shared "Navigator" block (search + 4 category cards) rendered inside *both* Overview and the Launchpad, reasoning that they overlap in audience. Decided against it — **PM confirmed Overview stays exactly as it is** (stats, pipeline, full Open Proposals list, Recent Activity feed). No merge needed. The two pages serve different questions and don't need shared UI to feel connected:
+
+| | Overview | Launchpad |
+|---|---|---|
+| Answers | *"How's my app doing?"* | *"What do I want to open?"* |
+| Stats + Pipeline | ✓ | — |
+| Open Proposals | Full list | Link only (`View all in Overview →`) |
+| Recent Activity feed | ✓ | — |
+| Search / Create / Import | — | ✓ (category cards) |
+| Recent objects (last-touched) | — | ✓ |
+
+They're linked by cross-reference (the Launchpad's Open Proposals link points at Overview), not by shared components.
 
 ### Why this is better than the sidebar
 
 - **~276px more canvas** (sidebar 220 + rail 56 = 276 recovered).
 - **Single mental model.** Everything is a tab. No modals for "detail views", no swap states.
-- **AI-first.** The Launchpad puts the AI input as the primary action — every "+" opens on an AI prompt.
+- **One AI, one place.** No duplicate AI-branded surfaces competing for attention.
 - **Familiar semantics** for a technical builder (Cursor / VSCode / Chrome tab-strip pattern).
 
 ---
@@ -142,17 +163,17 @@ Same pattern as workflow's `Preview / Rules / JSON` — alternative views of one
 
 ---
 
-## 5. AI state-awareness — one component, five states
+## 5. AI state-awareness — one component, four states
 
 The chrome stays constant (panel position, input, style). The content adapts to context.
 
 | Context | State | Content |
 |---|---|---|
 | App Overview | **Discovery** | Memory line (*"You've been working on X"*) · Recent AI activity · Exploratory chips |
+| Launchpad open | **Discovery** | Same as Overview — the Launchpad reuses the Discovery state rather than inventing a separate one. The canvas has its own plain search bar for direct navigation; the AI panel is for thinking things through. |
 | Workflow tab open, no active task | **Ready** | Empty state + 3 workflow-specific chips |
 | Workflow tab with active AI task | **Execution** | Task card with actions history · Diff pills · Inline suggestion with Apply / Dismiss |
 | Proposal tab open | **Review** | Chips: *"Summarize the diff"* · *"Suggest reviewers"* · *"Check compliance risks"* · Input: *"Ask about this Proposal…"* |
-| Launchpad open | **Command** | Hero input replaces the side panel entirely — the Launchpad **is** an AI-first surface |
 
 ### Coherence rule
 
@@ -184,7 +205,7 @@ Live in **Claude Design** and **Figma** (`Studio — Navigation Explorations`, f
 
 - **App Overview** with 3 sub-tabs (Summary / Insights / Activity) — full content specced and rendered
 - **Proposal detail tab** — lifecycle stepper, CRs per env (with draft IDs — `CR #461 → DEV-5430`, `CR #483 → QA-1207`), Scope + Activity two-column, sticky header with Promote → QA. AI panel in Review state.
-- **AI state-aware content** for Discovery / Ready / Execution / Review / Command states
+- **AI state-aware content** for Discovery / Ready / Execution / Review states
 - **Launchpad (+ New Tab)** — AI-first hero, Recent, object category grid, Open Proposals section
 - **New minimal topbar** — `[S badge] Mayo Client App ▾` · notifications right
 
