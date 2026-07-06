@@ -48,6 +48,8 @@ The PM shared a product walkthrough (video + stills) that revealed the shipped m
 
 **Question for PM:** Confirm the Task carries the full lifecycle (no per-env sub-entity), OR is there something between "Task" and "environment" we haven't seen?
 
+**⚠ Ambiguity flag — CR entity may still exist.** One still shows a breadcrumb `● Development < t4sting. cr [Awaiting approval]`. The `.cr` suffix on the object name strongly suggests **Change Requests still exist as named per-env entities in the product** — which would mean the shipped model is closer to our v3 (Task-container + CR-per-env) than to the "single Task through stages" interpretation. If this is the case, the recommendation flips: **keep CRs, adopt Task as the container** — which is exactly what H v3 already proposes with `Proposal` renamed to `Task`. Needs one direct question to PM: *"Are CRs a real sub-entity of Task, or is `.cr` just a naming convention some users adopt?"*
+
 ---
 
 ### 3. Env-to-env promotion — `first-class task-like entity` (product) vs `Promote button on Proposal` (our v3)
