@@ -17,6 +17,12 @@
 > 1. **Naming:** `Proposal → Task`. The shipped product already uses "Task" as the container. Aligning eliminates re-education. CRs remain intact as per-env sub-entities with `.cr` suffix (`DEV-5430.cr`, `QA-1207.cr`).
 > 2. **Lifecycle stages:** replaced workflow-oriented `Open → In progress → In review → Approved → Merged → Live` with the shipped env-oriented sequence `Draft → Review → Development → QA → Pre-Live → Live`. Stage names now double as env names, matching the mental model in the product.
 > 3. **Bottom status bar:** persistent 28px bar (IDE-style) added showing env context + object breadcrumb + stage pill. Fills the "which env am I editing" gap the topbar didn't cover. See §2.6.
+>
+> **v5 — post-implementation audit (July 2026).** Building the v4 spec in Claude Design surfaced navigation-depth problems the spec hadn't accounted for, plus two pieces of direct PM feedback. Revisions:
+> 1. **Env context moved off the bottom bar.** Bottom bar is removed entirely; env now shows as a risk-scaled chip in the topbar right (subtle for Dev/QA, escalating fill for Pre-Live/Live) plus a 2px ambient top-border for Pre-Live/Live only. Save/sync state becomes a floating corner chip. See §2.6 (revised).
+> 2. **Rules are first-class objects, not drill-down items.** They open as tabs, but nested *inside* their parent workflow tab (not top-level) via a level-2 "All rules" pinned tab + dynamic rule-tabs row — never as loose top-level tabs. See §2.7 (new).
+> 3. **Dashboard scales by app count, and isn't always the landing page.** ~90% of orgs have 1-2 apps; the original Dashboard design assumed large-org scale. Three tiers now govern Dashboard content, and orgs with exactly 1 app skip the Dashboard as landing entirely (straight into that app's Overview). See §2.5 and §2.5.1 (revised).
+> 4. **New App creation is a dropdown, not a modal**, with an extensible type list (Blank / Template-based / Training, per PM — more types expected). Trigger lives in the Dashboard topbar, persistent across all tiers.
 
 ---
 
@@ -129,7 +135,28 @@ They're linked by cross-reference (the Studio app's Open Tasks link points at Ov
 
 ### What it is
 
-The landing page users see when they log in, before entering any specific app. Also where they return by clicking the `[S]` badge from inside any app. Sits above the tab-first architecture — a switcher and triage view, not a workspace.
+The triage/switcher view sitting above the tab-first architecture — reachable via the `[S]` badge from inside any app. **Not always the mandatory landing page** (see §2.5.1 below) — whether login goes here or straight into an app depends on how many apps the org has.
+
+### Adaptive scale — three tiers by app count (v5)
+
+Real usage data: ~90% of orgs have only 1-2 apps; the Dashboard's original design (Starred/Recently/All-apps table with sort, pagination, hide-sandbox) was built for the large-org case, which is the minority. Content scales down for the common case instead of always showing large-org chrome:
+
+| Tier | App count | What renders |
+|---|---|---|
+| **1** | Exactly 1 app | App tile(s) render directly below the stats row — no "Starred"/"Recently active"/"All apps" section labels, no sort, no hide-sandbox toggle, no table. |
+| **2** | 3-8 apps | "Starred" + "Recently active" grids only — no "All apps" table (grids already surface everything at this scale). |
+| **3** | 9+ apps | Full original design unchanged: Starred grid + Recently active grid + "All apps" table with sort/hide-sandbox/pagination. |
+
+`+ New app` lives in the Dashboard topbar (right side, before the 🔔 bell) — persistent across all three tiers, since it previously only existed inside the "All apps" table header, which doesn't render in Tiers 1-2. Opens as a dropdown (not a modal) listing creation types (Blank app / Template-based app / Training app) as a data-driven vertical list, extensible for future types.
+
+### 2.5.1. Login destination — skip Dashboard for single-app orgs (v5)
+
+**The Dashboard is not always the landing page.** The cut is at exactly 1 app, not "1-2":
+
+- **Exactly 1 app** → login goes directly into that app's Overview. The Dashboard would be pure redundancy here: there is no cross-app anything to triage, and the App Overview already has its own "Needs your attention" section (§4) covering everything the Dashboard would show, scoped to the one app that exists. The `[S]` badge still reaches the Dashboard (e.g., to create a 2nd app), it's just not where login lands.
+- **2+ apps** → login goes to the Dashboard (Tier 1, 2, or 3 per the table above). Even at exactly 2 apps, real cross-app awareness exists — e.g., a connector expiring in App B is invisible while sitting in App A's Overview. Skipping the Dashboard here would genuinely lose information, unlike the 1-app case.
+
+**Transition moment (1 → 2 apps):** when an org creates its second app, login behavior changes for the first time. Needs a light one-time nudge (e.g., a toast or inline callout on next login: *"You now have 2 apps — here's how to switch between them"*) so the change doesn't read as a bug. Post-MVP detail, not blocking the core decision.
 
 ### Chrome (distinct from in-app chrome)
 
@@ -157,41 +184,80 @@ The audit acknowledged that Model 1's honest trade-off is *"the dashboard loses 
 
 ---
 
-## 2.6. Bottom status bar — IDE-style persistent context (v4)
+## 2.6. Env context & status — topbar chip + floating save indicator (v5, supersedes the v4 bottom bar)
 
-### What it is
+### What changed and why
 
-A 28px bar sticky to the viewport bottom, always visible on any in-app page. Serves the "which env am I in / what am I looking at / what state is it" question that the topbar (intentionally minimal) does not answer.
+v4 put env, object breadcrumb, and stage on a persistent 28px bottom bar. Built and tested, then reconsidered: the PM flagged that env/stage context deserved more prominence than a look-down bar delivers, and there was already unused space in the topbar right (near the bell) — better real estate for something safety-critical like "which env am I about to edit." The bottom bar is **removed entirely**; its jobs move to three places.
 
-### Structure
+### 1. Env chip — topbar right, risk-scaled
 
-- **Left:** colored dot + env name.
-  - `● Development` (green)
-  - `● QA` (brand-blue)
-  - `● Pre-Live` (orange)
-  - `● Live` (red)
-- **Middle** *(only when inside an object tab)*: `‹ {object type + name}`.
-  - Example: `‹ Task #461 · Add PII condition`
-  - Omitted on Overview and the Studio app page (no object context to breadcrumb).
-- **Right** *(when applicable)*: stage pill.
-  - Example: `Awaiting approval`, `Deployed`, `Draft`.
-  - Neutral 100 bg, 12px text, 2px radius.
+- Position: topbar right, 24px gap from the tab strip / "+" button, 12px gap before the 🔔 bell. Always visible on any in-app page (not on Studio Dashboard — pre-app, no env context yet).
+- Visible chip container in **every** state (a fully transparent Dev/QA chip read as stray nav in testing — it needs a visible boundary even at rest):
+  - **Dev / QA** (safe): neutral-100 bg, 1px neutral-200 border, neutral-800 text weight 500, 8px saturated dot (green for Dev, brand-blue for QA), 12px font, 2px 8px padding, 10px radius.
+  - **Pre-Live** (caution): orange-50 bg, orange-200 border, orange-900 text, orange-500 dot — same sizing as above.
+  - **Live** (alarm): red-500 solid bg, white text weight 600 (sentence case, not all-caps), white dot — same sizing.
+- Structure (dot + label) stays identical across all four envs; only the fill escalates with risk. This is deliberate — same element, recognizable at a glance, more assertive as risk increases.
+
+### 2. Ambient top border — Pre-Live / Live only
+
+- 2px horizontal strip, full viewport width, above the topbar.
+- Invisible on Dev/QA. `orange-500` on Pre-Live. `red-500` on Live.
+- Non-interactive, purely ambient — reinforces the env chip without requiring the user to read text.
+
+### 3. Object breadcrumb & stage — did not need the bottom bar after all
+
+- **Stage** already lives in the object's own sticky header (Task detail's `TASK #461 · Review` — see §3) — the bottom bar was duplicating it.
+- **Object identity** already lives in the tab title — also duplicated.
+- Removing the bar loses nothing; it was carrying information that had a home already.
+
+### 4. Save/sync state — floating corner chip (replaces the bar's only non-duplicated job)
+
+- ~140px chip, floats bottom-right, 16px from both edges, shadow elevation-1, 24px height, 12px radius.
+- States: `◐ Saved` (fades to transparent 3s after save), `◐ Unsaved changes` (persistent while dirty), `⚠ Sync failed` (persistent, click to retry).
+- Absent on Studio Dashboard.
+
+### Net effect
+
+Bottom bar's 28px returns to canvas. Env awareness gets *more* prominent (topbar + ambient border) despite less total chrome than v4's bar.
+
+---
+
+## 2.7. Rules — nested tabs, not top-level or drill-down (v5, new)
+
+### Problem it addresses
+
+The shipped product opens every rule as its own top-level tab — reproducing exactly the tab-proliferation problem this whole redesign exists to solve (`A_current_state_map.md`'s "tab proliferation" issue). A pure drill-down (replace the Rules list in-place, no tabs at all) was tried first and rejected: users regularly need multiple rules open side-by-side to compare WHEN/DO logic, and a single-slot drill-down can't do that.
+
+### Model — two-level tab nesting
+
+- **Level 1** — the object tab (e.g., a Workflow tab like "Subcontractor Form") stays exactly as-is: one tab per object, opened from the Studio app or search.
+- **Level 2** — inside the object tab, a horizontal row: `👁 Preview · ⚡ Rules ●N · </> JSON` (icon + label, `●N` badge showing count of currently-open rule tabs). This is the same Preview/Rules/JSON pattern from §4, unchanged in position — just now carries a live count badge.
+- **Level 3** (new) — when Rules is active, a second horizontal row appears beneath it: `All rules` (pinned, non-closeable, plain text, always the first item) followed by individual rule tabs (opened on demand, each with a `×` to close).
+
+Rules never appear as Level-1 (top-level) tabs. They live nested inside their parent workflow's Level-2/3 structure — closing the workflow tab closes all its rule tabs with it (confirmation modal if any are unsaved).
+
+### Why not an icon rail
+
+An earlier iteration replaced the horizontal Preview/Rules/JSON row with a vertical icon-only rail on the left (to visually separate "stable views" from "dynamic items"). Rejected after building and reviewing it:
+- No precedent elsewhere in the product — Records' own Attributes/Screen Layout/JSON already ship as horizontal icon+label links, not a vertical rail. The rail introduced a new pattern to solve a problem that didn't need one.
+- Icon-only reduces discoverability (needs hover+tooltip for something a label gives for free).
+- Left significant unused vertical space in the rail column — chrome that didn't earn its keep.
+
+### Why "All rules" is pinned, not toggle-only
+
+First version had no persistent list-entry point — returning to the list meant re-clicking the already-active Rules tab, a non-discoverable toggle interaction. `All rules` as a permanent, non-closeable first tab in the Level-3 row makes "go back to the list" an explicit, always-visible target instead of a hidden toggle.
 
 ### Behavior
 
-- Always visible; not hidable, not scrollable off.
-- Env dot stays saturated even when the rest of the UI is in a grayed-out/disabled state (context should never be ambiguous).
-- Chrome, not surface — no interactions live here in v4. It reads state, doesn't offer actions. (Actions still travel with objects — Promote button lives in the Task tab, not in the bar.)
+- Click a rule row in the list → opens/focuses its Level-3 tab, "All rules" deactivates (stays visible, stays clickable).
+- Click `All rules` → shows the list; any open rule tabs remain in the row, just unfocused.
+- Click `×` on a rule tab → closes it; if it was active, an adjacent tab (or `All rules` if none remain) takes focus.
+- Editing a rule marks its tab dirty (visual indicator). Closing the parent workflow tab with dirty rule tabs open triggers a confirmation modal (`Cancel` / `Discard` / `Save all & close`).
 
-### Why bottom, not topbar-extension
+### Extensibility
 
-- **Roles are distinct:** topbar carries objects and app identity (tabs, app switcher, notifications); bottom bar carries operational context (env, stage). Separating them keeps each read-scan predictable.
-- **IDE precedent:** VSCode / Cursor use bottom bars for the exact same job (branch, sync state, current file mode). Familiar for the technical-builder audience.
-- **Confirmed pattern in shipped product** (PM walkthrough).
-
-### What it displaces
-
-Nothing. Adds ~28px of vertical chrome (net effect: canvas is 276 - 28 = ~248px larger than the pre-audit sidebar+rail baseline, still a big win).
+The same Level-2/3 nesting is intended to generalize to any object with an internal item-list-plus-editor pattern (e.g., a Record's Screen Layout sections), not just Workflow Rules — not built for those yet, but the primitive should be reusable when the need comes up.
 
 ---
 
@@ -272,12 +338,17 @@ The AI's content must always match the object in the currently active tab. Cross
 |---|---|---|
 | **Naming** — container entity | ✓ Resolved (v4) | **Task** — aligned to shipped product (was Proposal in v2/v3) |
 | **Lifecycle stages** | ✓ Resolved (v4) | `Draft → Review → Development → QA → Pre-Live → Live` — aligned to shipped product |
-| **Bottom status bar** | ✓ Resolved (v4) | 28px persistent bar: env dot + object breadcrumb + stage pill (see §2.6) |
+| **Env context placement** | ✓ Resolved (v5) | Topbar-right risk-scaled chip + ambient top border, replaces v4's bottom bar (removed). See §2.6 |
+| **Rules navigation** | ✓ Resolved (v5) | Nested Level-2/3 tabs inside the parent workflow tab — never top-level, never a plain drill-down. See §2.7 |
+| **Dashboard adaptive scale** | ✓ Resolved (v5) | 3 tiers by app count (1 / 3-8 / 9+) — large-org chrome (sort, table, pagination) only renders when there's actual scale to justify it. See §2.5 |
+| **Dashboard as mandatory landing** | ✓ Resolved (v5) | Only for 2+ apps. Exactly 1 app → skip Dashboard, login lands directly in that app's Overview. See §2.5.1 |
+| **New App creation** | ✓ Resolved (v5) | Dropdown (not modal), extensible type list (Blank / Template-based / Training), trigger in Dashboard topbar |
 | **Detail access pattern** | ✓ Resolved (v2) | Tab (with AI as first-class right column) |
 | **Chrome minimalism** | ✓ Resolved (v2) | Sidebar + rail removed; Studio app is the entry point |
 | **Task tab AI state name** | ✓ Resolved (v3) | **Review** — chips: Summarize diff · Suggest reviewers · Check compliance risks |
 | **App identity in chrome** | ✓ Resolved (v3) | App name IS the leftmost tab; no duplication in topbar |
-| **Dashboard existence and scope** | ✓ Resolved (v3) | Studio Dashboard as root above apps; no AI panel |
+| **Task detail — single tab vs two tabs** | Open | Shipped product uses 2 tabs (Task workspace + Task Overview); our v4 has 1 tab with everything integrated. Decision pending. |
+| **Deploy vs Promote button semantics** | Open | Shipped product uses "Deploy to Development" (verb-first) at Draft stage; our v4 uses "Promote → QA" (progression-first) universally. Decision pending. |
 | **Promotion-as-entity** (env-to-env promotion with own lifecycle + Included tasks) | 🔴 Blocked | Awaiting PM's task-management doc. Structural gap — see `I_model_comparison.md` §3 |
 | **Env view page** (read-only env-scoped tab with deploy history + hotfix button) | 🔴 Blocked | Awaiting PM doc. See `I_model_comparison.md` §4–§5 |
 | **Hotfix flow** (direct-to-higher-env task variant) | 🔴 Blocked | Awaiting PM doc. See `I_model_comparison.md` §6 |
@@ -293,26 +364,34 @@ The AI's content must always match the object in the currently active tab. Cross
 
 Live in **Claude Design** and **Figma** (`Studio — Navigation Explorations`, file key `Mg3plZn2b0tadSOZAP3ndX`):
 
-- **Studio Dashboard** (root, above apps) — global search chrome · 4-stat row · Needs your attention cross-app · Starred apps grid · Recently active grid · All apps table with sort + Hide sandbox toggle
+- **Studio Dashboard** — adaptive by app count (3 tiers, §2.5): 1-app orgs skip it as landing entirely; 2+ renders Tier 1/2/3 content accordingly. Topbar `+ New app` dropdown (Blank / Template-based / Training), extensible list.
 - **App Overview** with 3 sub-tabs (Summary / Insights / Activity) — Summary has enriched Pipeline (per-env sub-metadata + active deploy indicator), Needs your attention, Team row, Open Tasks with Live badge + reviewer designation, Recent Activity with deploy events
 - **Task detail tab** — sticky header with Promote → QA button, lifecycle stepper (6 nodes: `Draft → Review → Development → QA → Pre-Live → Live`), Change Requests per env with `.cr` suffix (`CR #461 → DEV-5430.cr`, `CR #483 → QA-1207.cr`), Scope + Activity two-column
-- **Bottom status bar** (v4) — 28px, env dot + object breadcrumb + stage pill; sticky bottom on every in-app page
+- **Env chip + ambient border** (v5) — topbar-right risk-scaled chip (Dev/QA subtle, Pre-Live/Live escalating) + 2px top border for Pre-Live/Live; floating save/sync chip bottom-right. Bottom bar removed.
+- **Rules nested tabs** (v5) — Level-2 `Preview/Rules/JSON` row with live badge count, Level-3 `All rules` pinned + dynamic rule tabs, all inside the parent workflow tab (§2.7)
 - **Studio app "+ New Tab"** — plain search bar (not AI-branded) · Recent · Object categories with Create/Import icons · Open Tasks compact link · gray bg + card treatment matching Overview
 - **AI state-aware content** for Discovery (Overview / Dashboard-less / Studio app) · Ready (Workflow tab without task) · Execution (Workflow with active task) · Review (Task tab)
 - **Notification panel** — bell dropdown with unread events, actionable inline (Review · View · Take over), "Mark all read", "View all →" footer
 - **Avatar menu** — profile / preferences / team / help / shortcuts / sign out
-- **Minimal chrome** across all in-app tabs — `[S]` (returns to Dashboard) · tab strip · 🔔 · avatar
+- **Minimal chrome** across all in-app tabs — `[S]` (returns to Dashboard) · tab strip · env chip · 🔔 · avatar
 
 Figma file: https://www.figma.com/design/Mg3plZn2b0tadSOZAP3ndX/Studio-%E2%80%94-Navigation-Explorations
 
 ---
 
-## Next steps (post-v4)
+## Next steps (post-v5)
+
+**Done (v5):**
+- ✓ Env context moved to topbar chip + ambient border; bottom bar removed
+- ✓ Save/sync state as floating corner chip
+- ✓ Rules nested tab system (Level-2/3), rejecting both top-level-tabs (shipped product) and icon-rail (rejected iteration)
+- ✓ Dashboard adaptive by app-count tier (1 / 3-8 / 9+)
+- ✓ Dashboard skipped as landing for exactly-1-app orgs
+- ✓ New App creation as extensible dropdown, topbar-persistent trigger
 
 **Done (v4):**
 - ✓ Naming aligned to shipped product (`Proposal → Task`)
 - ✓ Lifecycle stages aligned (`Draft → Review → Development → QA → Pre-Live → Live`)
-- ✓ Bottom status bar built (env dot + breadcrumb + stage pill, 28px)
 - ✓ CRs preserved with `.cr` suffix per shipped convention
 
 **Done (v3):**
@@ -322,6 +401,12 @@ Figma file: https://www.figma.com/design/Mg3plZn2b0tadSOZAP3ndX/Studio-%E2%80%94
 - ✓ App identity solved (Mayo Client App as leftmost tab, not chrome duplicate)
 - ✓ Notification panel + avatar menu built
 
+**Open — needs a decision, not blocked on PM:**
+- Task detail: single tab (ours) vs two tabs (shipped product)
+- Deploy vs Promote button semantics
+- New Task modal design (depends on the single/two-tab decision above)
+- AI Change Log section inside Task Overview
+
 **Blocked (awaiting PM's task-management doc):**
 - Promotion-as-entity (env-to-env promotion as its own task-like tab)
 - Env view page (read-only, per-env, with deploy history + hotfix button)
@@ -330,14 +415,15 @@ Figma file: https://www.figma.com/design/Mg3plZn2b0tadSOZAP3ndX/Studio-%E2%80%94
 - Project layer (workspace-of-agent — pending PM clarification on interpretation)
 
 **Pending (post-model-alignment):**
-1. **Sync v4 back to Notion** (`Studio: Nav Model & AI Placement`) — currently blocked on Notion MCP; will complete when reconnected.
+1. **Sync v5 back to Notion** (`Studio: Nav Model & AI Placement`) — currently blocked on Notion MCP; will complete when reconnected.
 2. **Relabel existing Change Requests page as "Tasks list"** — mostly relabel, not a rebuild.
 3. **Empty state for Open Tasks** (Overview + Studio app + Dashboard).
-4. **Tab strip overflow behavior** (many tabs open — horizontal scroll + `⋯` menu). Post-MVP.
-5. **Global search "View all"** dedicated page — post-MVP, cross-app search results view.
-6. **Notification "View all" page** — post-MVP.
+4. **1→2 app transition nudge** — one-time callout when an org's 2nd app is created, since login behavior changes at that threshold (§2.5.1).
+5. **Tab strip overflow behavior** (many tabs open — horizontal scroll + `⋯` menu). Post-MVP.
+6. **Global search "View all"** dedicated page — post-MVP, cross-app search results view.
+7. **Notification "View all" page** — post-MVP.
 
 ---
 
 *Owner: Chris Calviño · chris@chriscalvino.com*
-*v4 — post-PM-walkthrough July 2026. Aligned to shipped product surface. Structural gaps captured in `I_model_comparison.md`.*
+*v5 — post-implementation audit, July 2026. Navigation depth and Dashboard scale-reality fixes on top of v4's product alignment. Structural gaps captured in `I_model_comparison.md`.*
