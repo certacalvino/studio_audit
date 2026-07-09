@@ -98,7 +98,7 @@ The `+ new tab` icon in the tab strip opens the **Studio app**: a full-canvas pa
 4. **Open Tasks** — a single compact link row (`✦ Open Tasks · 5 · View all in Overview →`), not a full list. The full list lives in Overview; the Studio app only signals it exists.
 
 **Behavior:**
-- Click any row/card → opens as a new tab. The `+ New tab` tab is replaced by the opened object; a fresh `+` icon appears at the far right of the tab strip.
+- Click any row/card → opens **in that same "+ New tab" placeholder**, replacing it in place — never as an additional tab alongside it. A fresh `+` appears at the far right of the strip once the placeholder is consumed. If the target is already open in another tab, the "New tab" placeholder closes and focus moves to the existing tab (dedup — never two tabs for the same object). This rule was in the original v2/v3 spec but kept getting missed in implementation across multiple builds (workflow, record, Records list all reproduced it) — treat it as load-bearing, not optional polish.
 - `⌘K` focuses the search input.
 - Click on `[S]` badge → back to Dashboard (all-apps view). Doesn't affect open tabs.
 - Click on `Mayo Client App ▾` → app switcher dropdown.
@@ -234,7 +234,7 @@ The shipped product opens every rule as its own top-level tab — reproducing ex
 ### Model — two-level tab nesting
 
 - **Level 1** — the object tab (e.g., a Workflow tab like "Subcontractor Form") stays exactly as-is: one tab per object, opened from the Studio app or search.
-- **Level 2** — inside the object tab, a horizontal row: `👁 Preview · ⚡ Rules ●N · </> JSON` (icon + label, `●N` badge showing count of currently-open rule tabs). This is the same Preview/Rules/JSON pattern from §4, unchanged in position — just now carries a live count badge.
+- **Level 2** — inside the object tab, a horizontal row: `Preview · Rules ●N · JSON` (plain text label, no icon — see "No icons on Level-2 sub-tabs" below; `●N` badge showing count of currently-open rule tabs). This is the same Preview/Rules/JSON pattern from §4, unchanged in position — just now carries a live count badge.
 - **Level 3** (new) — when Rules is active, a second horizontal row appears beneath it: `All rules` (pinned, non-closeable, plain text, always the first item) followed by individual rule tabs (opened on demand, each with a `×` to close).
 
 Rules never appear as Level-1 (top-level) tabs. They live nested inside their parent workflow's Level-2/3 structure — closing the workflow tab closes all its rule tabs with it (confirmation modal if any are unsaved).
@@ -242,7 +242,7 @@ Rules never appear as Level-1 (top-level) tabs. They live nested inside their pa
 ### Why not an icon rail
 
 An earlier iteration replaced the horizontal Preview/Rules/JSON row with a vertical icon-only rail on the left (to visually separate "stable views" from "dynamic items"). Rejected after building and reviewing it:
-- No precedent elsewhere in the product — Records' own Attributes/Screen Layout/JSON already ship as horizontal icon+label links, not a vertical rail. The rail introduced a new pattern to solve a problem that didn't need one.
+- No precedent elsewhere in the product — Records' own Attributes/Screen Layout/JSON already ship as horizontal links, not a vertical rail. The rail introduced a new pattern to solve a problem that didn't need one.
 - Icon-only reduces discoverability (needs hover+tooltip for something a label gives for free).
 - Left significant unused vertical space in the rail column — chrome that didn't earn its keep.
 
@@ -260,6 +260,12 @@ First version had no persistent list-entry point — returning to the list meant
 ### Extensibility
 
 The same Level-2/3 nesting is intended to generalize to any object with an internal item-list-plus-editor pattern (e.g., a Record's Screen Layout sections), not just Workflow Rules — not built for those yet, but the primitive should be reusable when the need comes up.
+
+### No icons on Level-2 sub-tabs (v5, revised)
+
+Every Level-2 sub-tab row built so far (`Preview/Rules/JSON`, `Attributes/Screen Layout/JSON`, `Workspace/Overview/Changes`, the Configs row) originally paired an icon with each label. Removed — plain text only, everywhere this pattern appears, including inline quick-links that reuse the same icon set (Task Workspace's object tree, the Records list's per-row links). Two reasons:
+1. **Noise without payoff** — the labels are already unambiguous English words; the icon added visual weight without adding legibility.
+2. **Internal inconsistency** — Level-3 pinned tabs (`All rules`, `All Badges`) were already plain text; icons only at Level-2 made the two levels look like different systems when they're the same primitive. Removing icons everywhere makes the whole tab system read as one consistent language, distinguished by position and state (underline, weight), not decoration.
 
 ---
 
@@ -284,7 +290,7 @@ The Studio app's existing **Object categories** grid (§2, item 3) is the single
 **Workflows** keep their existing, unchanged pattern (individual workflow = its own Level-1 tab, with `Preview/Rules/JSON` Level-2 and Rules nesting at Level-3 per §2.7) — Workflows are opened deliberately and in small numbers (you open one because you're about to edit it), which hasn't produced the same proliferation risk in testing. If that changes, apply the same nesting fix used for Records.
 
 **Lightweight config objects (Badges, Scheduled Actions, Workflow Prepopulation, Step Copy, Object Selection) → consolidated under one "Configs" Level-1 tab:**
-- `Configs` card → expand → opens a **"Configs" Level-1 tab** with a Level-2 sub-tab row (same icon+label pattern as Preview/Rules/JSON): `🏷 Badges · ⏰ Scheduled Actions · 📋 Workflow Prepopulation · 📑 Step Copy · 🎯 Object Selection`.
+- `Configs` card → expand → opens a **"Configs" Level-1 tab** with a Level-2 sub-tab row (same plain-text pattern as Preview/Rules/JSON — see "No icons on Level-2 sub-tabs", §2.7): `Badges · Scheduled Actions · Workflow Prepopulation · Step Copy · Object Selection`.
 - Each Level-2 sub-tab defaults to an **"All [type]"** list (e.g., "All Badges · 3") — search, filters, `+ Add`.
 - Clicking an individual item opens it **nested at Level-3**, identical to how an individual rule opens inside a workflow's Rules sub-tab: `All Badges` pinned tab + the opened item's tab alongside it, editable inline (form + JSON), closeable independently.
 - Resolves the shipped product's inconsistency (only 3 of these 5 types were grouped under its own "Configs" tab, with no stated criterion) by treating all five the same way.
