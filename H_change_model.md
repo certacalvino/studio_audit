@@ -24,7 +24,7 @@
 > 3. **Dashboard scales by app count, and isn't always the landing page.** ~90% of orgs have 1-2 apps; the original Dashboard design assumed large-org scale. Three tiers now govern Dashboard content, and orgs with exactly 1 app skip the Dashboard as landing entirely (straight into that app's Overview). See §2.5 and §2.5.1 (revised).
 > 4. **New App creation is a dropdown, not a modal**, with an extensible type list (Blank / Template-based / Training, per PM — more types expected). Trigger lives in the Dashboard topbar, persistent across all tiers.
 > 5. **Task detail restructured to single-tab with sub-tabs.** `Workspace / Overview / Changes` as Level-2 sub-tabs inside one Task tab — absorbs the shipped product's two-tab content (workspace canvas + task overview) without breaking the "one object = one tab" rule. See §3 (revised).
-> 6. **Object categories resolved for Records, Badges, and other root-level types.** Records get a dedicated list tab + per-record Level-1 tabs (Records Map as a sibling); Badges/Scheduled Actions/Workflow Prepopulation/Step Copy/Object Selection consolidate under one "Configs" tab, reusing the Rules-nesting primitive from §2.7. See §2.8 (new).
+> 6. **Object categories resolved for Records, Badges, and other root-level types.** Records get a "Records" tab with `All Records` pinned + individual records nested at Level-2 (Records Map as a sibling tab) — reverted from an initial per-record Level-1-tab attempt that reproduced tab proliferation in testing. Badges/Scheduled Actions/Workflow Prepopulation/Step Copy/Object Selection consolidate under one "Configs" tab, reusing the same nesting primitive from §2.7. See §2.8 (new).
 
 ---
 
@@ -271,25 +271,31 @@ Auditing the shipped product surfaced several object types that don't fit the Wo
 
 ### Model
 
-The Studio app's existing **Object categories** grid (§2, item 3) is the single entry point for all of these — each category card's expand link resolves to one of two patterns, depending on whether the underlying objects are full first-class objects or lightweight config objects:
+The Studio app's existing **Object categories** grid (§2, item 3) is the single entry point for all of these — each category card's expand link opens a Level-1 tab. What happens *inside* that tab follows the same nested Level-2/3 primitive built for Rules (§2.7), applied consistently to every category — including Records, after an initial attempt to give records their own Level-1-per-item treatment reproduced the exact tab-proliferation problem this redesign exists to fix (see "What we tried and reverted" below).
 
-**Full objects (Workflows, Records) → dedicated Level-1 list tab, individual items get their own Level-1 tabs:**
-- `Records` card → expand → opens a **"Records" list tab** (the master table: External Party, Mayo Internal Party, Contracts External Party, etc.)
-- Click a row → opens **that record as its own Level-1 tab**, with `Attributes / Screen Layout / JSON` as Level-2 sub-tabs (already designed)
-- **Records Map** is a **sibling Level-1 tab**, not nested inside "Records" or inside any individual record — it's a systemic cross-record view (the ER diagram), reachable via a `View Records Map` button inside the "Records" list tab or directly from the Studio app category card.
-- `Workflows` already works this way (existing pattern, unchanged): expand → "Workflows" list → individual workflow tab with `Preview / Rules / JSON`.
+**Records:**
+- `Records` card → expand → opens a **"Records" Level-1 tab**.
+- Inside it, a Level-2 row: **`All Records`** (pinned, non-closeable — same convention as `All rules`/`All Badges`) + individual record tabs, opened on demand, each closeable with `×`.
+- Clicking a row in the `All Records` list → opens/focuses that record's Level-2 tab. It does **not** open a new top-level tab.
+- Inside an individual record's Level-2 tab, its `Attributes / Screen Layout / JSON` views render as an inline sub-tab row — the same component already built for records, just nested one level deeper than originally spec'd.
+- **Records Map** is a **sibling Level-1 tab** (systemic cross-record ER diagram, reachable via a `View Records Map` button inside "Records" or directly from the Studio app category card). Clicking a node in the Map does **not** open a new top-level tab either — it switches focus to the "Records" tab (opening it if not already open) and nests/focuses that record's Level-2 tab there.
+- Any other entry point that surfaces a record (a Task's Workspace quick-links, ⌘K search, the Studio app's Recent list) routes through the same behavior — a record never opens as a bare top-level tab, regardless of where the click originated.
 
-**Lightweight config objects (Badges, Scheduled Actions, Workflow Prepopulation, Step Copy, Object Selection) → consolidated under one "Configs" Level-1 tab, reusing the Rules-nesting primitive:**
+**Workflows** keep their existing, unchanged pattern (individual workflow = its own Level-1 tab, with `Preview/Rules/JSON` Level-2 and Rules nesting at Level-3 per §2.7) — Workflows are opened deliberately and in small numbers (you open one because you're about to edit it), which hasn't produced the same proliferation risk in testing. If that changes, apply the same nesting fix used for Records.
+
+**Lightweight config objects (Badges, Scheduled Actions, Workflow Prepopulation, Step Copy, Object Selection) → consolidated under one "Configs" Level-1 tab:**
 - `Configs` card → expand → opens a **"Configs" Level-1 tab** with a Level-2 sub-tab row (same icon+label pattern as Preview/Rules/JSON): `🏷 Badges · ⏰ Scheduled Actions · 📋 Workflow Prepopulation · 📑 Step Copy · 🎯 Object Selection`.
-- Each Level-2 sub-tab defaults to an **"All [type]"** list (e.g., "All Badges · 3"), exactly the same pattern built for Rules in §2.7 — search, filters, `+ Add`.
-- Clicking an individual item (a badge, a scheduled action, etc.) opens it **nested at Level-3**, identical to how an individual rule opens inside a workflow's Rules sub-tab: `All Badges` pinned tab + the opened item's tab alongside it, editable inline (form + JSON), closeable independently.
-- This resolves the shipped product's inconsistency by treating all five config-types the same way — no more arbitrary "3 grouped, 2 standalone" split.
+- Each Level-2 sub-tab defaults to an **"All [type]"** list (e.g., "All Badges · 3") — search, filters, `+ Add`.
+- Clicking an individual item opens it **nested at Level-3**, identical to how an individual rule opens inside a workflow's Rules sub-tab: `All Badges` pinned tab + the opened item's tab alongside it, editable inline (form + JSON), closeable independently.
+- Resolves the shipped product's inconsistency (only 3 of these 5 types were grouped under its own "Configs" tab, with no stated criterion) by treating all five the same way.
 
 **Connectors** — recognized as a fourth category card in the grid, but not yet audited against the shipped product in enough detail to spec its list/detail pattern. Left open until reference screenshots are available.
 
-### Why config-types get consolidated but Records doesn't
+### What we tried and reverted — Records as Level-1-per-item
 
-Records earned a dedicated Level-1-per-item treatment because they already carry real per-object depth (Attributes, Screen Layout, JSON — comparable to a Workflow). Badges/Scheduled Actions/etc. are lighter — one edit form plus JSON, no multi-view richness — closer in shape to a Workflow's individual Rules than to a Workflow itself. Nesting them under a shared "Configs" tab (reusing the exact Rules primitive) avoids both extremes: they don't get lost as unlabeled root clutter (the shipped product's problem), and they don't each demand a full Level-1 list-tab-of-their-own (five near-empty "Badges list" / "Scheduled Actions list" tabs would be its own kind of proliferation).
+First pass gave Records the same treatment as Workflows: individual record = its own Level-1 tab, reasoning that records carry enough per-object depth (Attributes/Screen Layout/JSON) to earn it, the same way a Workflow does. Built and tested in Claude Design — and it broke immediately in practice: opening the Studio app → Records → Records Map → clicking three record nodes in sequence left **six top-level tabs** open before doing any actual work, reproducing the "49 ungovernable drafts" problem this whole redesign exists to solve, just relocated to records.
+
+The difference from Workflows turned out to be usage pattern, not object richness: records get **browsed** far more than they get **worked on** — via Records Map, via quick-links from inside a Task, via the master list — a "look at many, edit few" pattern that top-level tabs handle badly. Workflows are opened *because* you're about to edit them; records are frequently opened just to check something. Nesting records under one "Records" tab (reusing the exact All-rules/All-Badges primitive) fixes this without losing any of the per-record depth — `Attributes/Screen Layout/JSON` still exist, just one level further in.
 
 ---
 
@@ -380,7 +386,7 @@ The AI's content must always match the object in the currently active tab. Cross
 | **Task tab AI state name** | ✓ Resolved (v3) | **Review** — chips: Summarize diff · Suggest reviewers · Check compliance risks |
 | **App identity in chrome** | ✓ Resolved (v3) | App name IS the leftmost tab; no duplication in topbar |
 | **Task detail — single tab vs two tabs** | ✓ Resolved (v5) | Single tab, `Workspace / Overview / Changes` as Level-2 sub-tabs — absorbs shipped product's 2-tab content without breaking "one object = one tab". See §3 |
-| **Object categories** (Records, Badges, Scheduled Actions, config-types) | ✓ Resolved (v5) | Records → dedicated list + per-record tabs, Map as sibling. Config-types consolidate under "Configs" tab, reusing Rules-nesting primitive. See §2.8 |
+| **Object categories** (Records, Badges, Scheduled Actions, config-types) | ✓ Resolved (v5) | Records → "Records" tab, `All Records` pinned + records nested at Level-2, Map as sibling (reverted from per-record Level-1 tabs after testing showed proliferation). Config-types consolidate under "Configs" tab, same nesting primitive. See §2.8 |
 | **Deploy vs Promote button semantics** | Open | Shipped product uses "Deploy to Development" (verb-first) at Draft stage; our v4 uses "Promote → QA" (progression-first) universally. Decision pending. |
 | **Promotion-as-entity** (env-to-env promotion with own lifecycle + Included tasks) | 🔴 Blocked | Awaiting PM's task-management doc. Structural gap — see `I_model_comparison.md` §3 |
 | **Env view page** (read-only env-scoped tab with deploy history + hotfix button) | 🔴 Blocked | Awaiting PM doc. See `I_model_comparison.md` §4–§5 |
