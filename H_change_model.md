@@ -269,6 +269,20 @@ Every Level-2 sub-tab row built so far (`Preview/Rules/JSON`, `Attributes/Screen
 1. **Noise without payoff** — the labels are already unambiguous English words; the icon added visual weight without adding legibility.
 2. **Internal inconsistency** — Level-3 pinned tabs (`All rules`, `All Badges`) were already plain text; icons only at Level-2 made the two levels look like different systems when they're the same primitive. Removing icons everywhere makes the whole tab system read as one consistent language, distinguished by position and state (underline, weight), not decoration.
 
+### Two visual styles for nested tabs: underline vs. pill (v5, new)
+
+Once Records' nested row mixed pinned views (`All Records`, `Records Map`) with dynamically-opened items (individual records) in the same row, both using the same underline-tab style, they became visually indistinguishable — a real ambiguity, not just a taste preference, since the two categories mean different things (a permanent view vs. something-you-opened-and-can-close).
+
+**Rule, applied everywhere this nesting pattern exists (Records, Rules, Configs):**
+- **Pinned/structural views** (`All Records`, `Records Map`, `All rules`, `All Badges`, `Preview`, `JSON`, `Attributes`, `Screen Layout`, `Workspace`, `Overview`, `Changes`, and the 5 Configs sub-tabs) → stay **underline-tab style**, never closeable, always present.
+- **Dynamically-opened items** (an individual record, an individual rule, an individual badge/scheduled action/etc.) → become **pills** (rounded chip, bordered, closeable with `×`) — visually distinct from the underline tabs they sit alongside.
+
+### Title size scales with nesting depth (v5, new)
+
+A record's own title (e.g. "Contracts Engagement") was rendering at the same size as a genuine Level-1 page title (e.g. a Task's "Add PII condition to Subcontractor Form") — but the record is nested two levels inside "Records", not a page of its own. Visual weight should track actual nesting depth:
+- **Level 1** (Task title, app name, a category tab's own heading) → large, bold (~24-28px).
+- **Level 2/3 nested content** (an individual record/rule/badge's own title inside its parent tab) → smaller, semibold (~18-20px) — never competes visually with a real page title.
+
 ---
 
 ## 2.8. Object categories — where Records, Badges, and other root-level types live (v5, new)
