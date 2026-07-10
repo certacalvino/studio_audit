@@ -159,7 +159,7 @@ Roughly **1 new tab type + 1 relabeling pass + 1 promotion flow addition**. Mana
 
 ## Recommended next step
 
-Send this to PM (Slack or paste into Notion). Ask for a **written yes/no per row** so we don't lose decisions in a call. Once they land, I do a v4 of `H_change_model.md` and update the Claude Design frames.
+**Correction (July 10):** originally planned to wait for PM sign-off on each row before designing — that turned out to be unnecessary. v4/v5 of `H_change_model.md` already designed most of this directly from the product walkthrough (Task naming, lifecycle stages, .cr suffix). The remaining rows (promotion-as-entity, env view, hotfix, version history) don't need a PM doc either — same approach: design from what's already in hand, send the Claude Design frames to PM for reaction rather than a written yes/no gate beforehand.
 
 ---
 

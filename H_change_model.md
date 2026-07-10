@@ -13,7 +13,7 @@
 > 3. **AI panel scope confirmed** absent at Dashboard level (Model 1 verdict: scoped copilot in-app, not global operator); present at every tab inside an app.
 > 4. **App identity as tab label** — "Mayo Client App" IS the leftmost tab (uncloseable). No app name duplication in chrome. [S] badge navigates back to Studio Dashboard.
 >
-> **v4 — post-PM-walkthrough (July 2026).** PM shared a video of the shipped product. Three surface updates aligned our design to what already exists in-product; structural gaps (promotion-as-entity, env view page, hotfix, version history) are captured separately in `I_model_comparison.md` pending the PM's task-management doc.
+> **v4 — post-PM-walkthrough (July 2026).** PM shared a video of the shipped product. Three surface updates aligned our design to what already exists in-product; structural gaps (promotion-as-entity, env view page, hotfix, version history) are captured separately in `I_model_comparison.md`. **Correction (July 10):** there is no separate PM task-management doc in progress — these gaps are ours to design directly from the product walkthrough already in hand, not something to wait on.
 > 1. **Naming:** `Proposal → Task`. The shipped product already uses "Task" as the container. Aligning eliminates re-education. CRs remain intact as per-env sub-entities with `.cr` suffix (`DEV-5430.cr`, `QA-1207.cr`).
 > 2. **Lifecycle stages:** replaced workflow-oriented `Open → In progress → In review → Approved → Merged → Live` with the shipped env-oriented sequence `Draft → Review → Development → QA → Pre-Live → Live`. Stage names now double as env names, matching the mental model in the product.
 > 3. **Bottom status bar:** persistent 28px bar (IDE-style) added showing env context + object breadcrumb + stage pill. Fills the "which env am I editing" gap the topbar didn't cover. See §2.6.
@@ -414,11 +414,11 @@ The AI's content must always match the object in the currently active tab. Cross
 | **Task detail — single tab vs two tabs** | ✓ Resolved (v5) | Single tab, `Workspace / Overview / Changes` as Level-2 sub-tabs — absorbs shipped product's 2-tab content without breaking "one object = one tab". See §3 |
 | **Object categories** (Records, Badges, Scheduled Actions, config-types) | ✓ Resolved (v5) | Records → "Records" tab, `All Records` pinned + records nested at Level-2, Map as sibling (reverted from per-record Level-1 tabs after testing showed proliferation). Config-types consolidate under "Configs" tab, same nesting primitive. See §2.8 |
 | **Deploy vs Promote button semantics** | Open | Shipped product uses "Deploy to Development" (verb-first) at Draft stage; our v4 uses "Promote → QA" (progression-first) universally. Decision pending. |
-| **Promotion-as-entity** (env-to-env promotion with own lifecycle + Included tasks) | 🔴 Blocked | Awaiting PM's task-management doc. Structural gap — see `I_model_comparison.md` §3 |
-| **Env view page** (read-only env-scoped tab with deploy history + hotfix button) | 🔴 Blocked | Awaiting PM doc. See `I_model_comparison.md` §4–§5 |
-| **Hotfix flow** (direct-to-higher-env task variant) | 🔴 Blocked | Awaiting PM doc. See `I_model_comparison.md` §6 |
-| **Version history + rollback** (per-env deployed-versions list + Switch to version) | 🔴 Blocked | Awaiting PM doc. See `I_model_comparison.md` §4 |
-| **Project layer** (workspace-of-agent above Task, per PM verbal mention) | 🔴 Blocked | Interpretation unclear (agrupador vs agent workspace); needs PM confirmation |
+| **Promotion-as-entity** (env-to-env promotion with own lifecycle + Included tasks) | Open | Design directly from the PM's product walkthrough — see `I_model_comparison.md` §3 |
+| **Env view page** (read-only env-scoped tab with deploy history + hotfix button) | Open | Design directly from the PM's product walkthrough — see `I_model_comparison.md` §4–§5 |
+| **Hotfix flow** (direct-to-higher-env task variant) | Open | Design directly from the PM's product walkthrough — see `I_model_comparison.md` §6 |
+| **Version history + rollback** (per-env deployed-versions list + Switch to version) | Open | Design directly from the PM's product walkthrough — see `I_model_comparison.md` §4 |
+| **Project layer** (workspace-of-agent above Task, per PM verbal mention) | 🔴 Blocked | Interpretation unclear (agrupador vs agent workspace); needs PM confirmation — this one genuinely needs a PM answer, not a doc |
 | **App switcher dropdown** — visual design | Deferred | Click `[S]` → Dashboard; from there enter any app. Explicit switcher dropdown deprioritized. |
 | **Tab strip overflow behavior** | Open (post-MVP) | Horizontal scroll + `⋯` overflow menu — needed when 8+ tabs open |
 | **Global notification "View all" page** | Open (post-MVP) | Panel exists; dedicated page for archive/search TBD |
@@ -472,12 +472,14 @@ Figma file: https://www.figma.com/design/Mg3plZn2b0tadSOZAP3ndX/Studio-%E2%80%94
 - New Task modal design (depends on the single/two-tab decision above)
 - AI Change Log section inside Task Overview
 
-**Blocked (awaiting PM's task-management doc):**
+**Open — design directly from the PM's product walkthrough, no doc to wait on (correction, July 10):**
 - Promotion-as-entity (env-to-env promotion as its own task-like tab)
 - Env view page (read-only, per-env, with deploy history + hotfix button)
 - Hotfix flow (target-env selector on new-Task creation, "Hotfix" badge)
 - Version history + rollback ("Deployed versions" modal, "Switch to version" action)
-- Project layer (workspace-of-agent — pending PM clarification on interpretation)
+
+**Blocked — genuinely needs a PM answer:**
+- Project layer (workspace-of-agent above Task — interpretation unclear, needs PM confirmation)
 
 **Pending (post-model-alignment):**
 1. **Sync v5 back to Notion** (`Studio: Nav Model & AI Placement`) — currently blocked on Notion MCP; will complete when reconnected.
