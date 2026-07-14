@@ -34,7 +34,8 @@
 > 3. **Env chip becomes a switcher**, not just a read-only indicator — click opens Development/QA/Pre-Live/Live with per-env icons, still risk-scaled per §2.6's original ruling. See §2.6 (revised).
 > 4. **Task detail restructured again — `Overview / Changes / Tests` sub-tabs**, replacing v5's `Workspace/Overview/Changes`. Matches the shipped reference: Stage progress · Reviewers · Change Log · Discussion (Overview), diff view (Changes), Scenarios + Run all (Tests). See §3 (revised).
 > 5. **App tab sub-tabs gain `Settings` and `Overrides`**, after `Tasks`, separated by a thin divider from the "monitor" tabs (Summary/Insights/Activity/Tasks). See §4 (revised).
-> 6. **Summary tab decluttered** — merged the legacy `CRs pending review` tile (stale terminology, same entity as Task) into the `Open Tasks` tile, and trimmed the `Open Tasks` list section from a full 5-row duplicate down to a 3-row preview + `View all →` linking to the now-real `Tasks` sub-tab. See §4 (revised).
+> 6. **`CRs pending review` tile confirmed distinct, not a merge candidate** — initially flagged as stale terminology duplicating `Open Tasks`; retracted after confirming CRs are genuinely separate per-env sub-entities of a Task (`DEV-5430.cr`), not a synonym for it. Tile stays as-is.
+> 7. **Env chip doubles as the branch/Task switcher** — confirmed against the shipped product's own combined Env+Draft dropdown (`A_current_state_map.md` §6): switching environment and switching which Task/branch you're working in were never two separate mechanisms there. Task Management resolves into three affordances mapped to existing pieces — trigger/switch (env chip), administer (`Tasks` sub-tab), create (`+ New Task` modal, reachable from both). See §2.10 (revised).
 
 ---
 
@@ -394,10 +395,21 @@ I doc's item #5 asked whether an env view is per-env or per-app-per-env, and lef
 - Fields: title, description. Note: *"This creates a working copy from [env]. Your changes are applied there first, then promoted to higher environment."*
 - Alt path: `Create a hotfix instead` — for urgent fixes (ties to I doc's item #6, still otherwise open).
 
-### Env switcher
+### Env switcher doubles as the branch/Task switcher (v6, refined)
 
-- The env chip (§2.6) becomes clickable — opens `Development / QA / Pre-Live / Live`, each with a distinct icon (code / flask / rocket / globe).
-- Switching env re-scopes the current app tab's content rather than opening a separate "env view" tab — resolves I doc's item #5. When scoped to a non-Development env, the app tab shows a `Review this environment` banner (Settings/Overrides editable and deployable directly, `Create hotfix` for urgent fixes) and, if there are unpromoted changes, a banner offering `Promote to [next env]`. Non-Development envs are read-only for direct edits — reflected in the status bar.
+Confirmed against the shipped product's own ground truth (`A_current_state_map.md` §6): the real Env + Draft switcher is **one combined dropdown** — `ENVIRONMENTS: Development (46) | QA | Pre-Live | Live` with `DRAFTS: MY DRAFTS · TEAM DRAFTS · + Create new draft · SWITCH →` underneath. Env and branch-switching were never two separate mechanisms there — we shouldn't invent a split that doesn't exist in the model we're aligning to.
+
+This resolves into three distinct affordances, each already mapped to an existing piece of our system — no new UI mechanism needed for any of them:
+
+| Affordance | Shipped reference | Our system |
+|---|---|---|
+| **Trigger / switch** — which branch am I working in right now | "Switch to Environment" rail icon | Env chip (`● Development ▾`) — expands to `Development / QA / Pre-Live / Live`; selecting `Development` also lists your active Tasks/branches there (mirrors `MY DRAFTS`/`TEAM DRAFTS`/`SWITCH`) so switching env and switching branch happen in the same control |
+| **Administer** — browse/find/review any Task regardless of env | "All tasks" rail icon | `Tasks` sub-tab (§4) — full search/filter/table, not scoped to just Development |
+| **Create** — start a new Task | "New task" rail icon (pen) | `+ New Task` modal, reachable from *both* the env-chip dropdown (quick create while switching) and the `Tasks` sub-tab (create while browsing) — two entry points, one modal, consistent with the two-entry-flow pattern already used for T25 |
+
+The Task ID's own env prefix (`DEV-6004`, confirmed in the shipped reference's Task Overview breadcrumb `DEV-6004 → Development`) is further evidence a Task/draft lives inside a specific environment — reinforcing that env-switching and branch-switching are the same action, not two.
+
+Switching env still re-scopes the current app tab's content for browsing (resolves I doc's item #5): a non-Development env shows a `Review this environment` banner (Settings/Overrides editable and deployable directly, `Create hotfix` for urgent fixes) and, if there are unpromoted changes, a banner offering `Promote to [next env]`. Non-Development envs are read-only for direct edits — reflected in the status bar.
 
 ### Still open (not resolved this pass)
 
@@ -452,7 +464,7 @@ Same pattern as workflow's `Preview / Rules / JSON` — alternative views of one
 
 | Sub-tab | Purpose | Content |
 |---|---|---|
-| **Summary** | Day-to-day glance | Stats (Workflows / Open Tasks / Drafts — `CRs pending review` merged into the Open Tasks stat, v6) · Pipeline · Open Tasks (top **3**, v6: trimmed from 5 — was duplicating the `Tasks` sub-tab at the same depth) + `View all →` · Recent activity (top 5) |
+| **Summary** | Day-to-day glance | Stats (Workflows / Open Tasks / CRs pending review — kept distinct, v6: not a duplicate, CRs are separate per-env sub-entities / Drafts) · Pipeline · Open Tasks (top 5) · Recent activity (top 5) |
 | **Insights** | Situation room | People · Health · Environments · Proactive suggestions with inline actions |
 | **Activity** | Timeline archive | Filterable feed (Tasks / Deploys / Comments / AI runs) with search + Load more |
 | **Tasks** (v6: real content, was a placeholder) | Task Management for this app | See §2.10 — search, `+ New Task`, filter pills (`My tasks/Assigned reviews/All`), table (`Title/Stage/Created by`) |
