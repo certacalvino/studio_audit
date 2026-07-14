@@ -27,6 +27,14 @@
 > 6. **Object categories resolved for Records, Badges, and other root-level types.** Records get a "Records" tab with `All Records` + `Records Map` as twin pinned Level-2 tabs (two views of the same domain) + individual records nested alongside them — reverted twice in testing: first from a per-record Level-1-tab attempt, then from Records Map as its own sibling Level-1 tab, both of which reproduced tab proliferation. Badges/Scheduled Actions/Workflow Prepopulation/Step Copy/Object Selection consolidate under one "Configs" tab, reusing the same nesting primitive from §2.7. See §2.8 (new).
 > 7. **No icons on Level-2 sub-tabs, anywhere.** Plain text only — matches the already-plain Level-3 pinned tabs, removing an inconsistency between the two levels.
 > 8. **"+ New tab" must be replaced, not added to** (already in v2/v3 spec, re-enforced after repeatedly getting missed in implementation) — selecting anything from a "New tab" placeholder replaces it in place; if the target is already open elsewhere, focus that tab instead of duplicating.
+>
+> **v6 — Task Management build-out (July 2026).** Cataloguing the shipped reference's Task Management surface (Task Overview, Sandbox, Tests, env switcher, App Settings, App Overrides, All Tasks) end-to-end surfaced that it needed a real pass to fit our tab-first chrome instead of its own right-rail chrome. Six revisions:
+> 1. **Round 3 — Records/Rules/Configs items revert AGAIN to top-level tabs.** §2.7/§2.8's nesting fix solved tab-pileup from casual browsing, but cost something the client needs more: opening multiple objects side-by-side to compare (a record from one app next to a rule from another app's workflow, at once). Nesting is reverted; clutter is solved differently this time — visual tab-grouping by parent app, not containment. See §2.9 (new).
+> 2. **Task is scoped to one app, not cross-app.** A Task is a working copy/branch of the single app it was created from. This settles where Task Management lives: inside that app's own tab, not the Studio Dashboard's filter row, not a global tab, not a modal. See §2.10 (new).
+> 3. **Env chip becomes a switcher**, not just a read-only indicator — click opens Development/QA/Pre-Live/Live with per-env icons, still risk-scaled per §2.6's original ruling. See §2.6 (revised).
+> 4. **Task detail restructured again — `Overview / Changes / Tests` sub-tabs**, replacing v5's `Workspace/Overview/Changes`. Matches the shipped reference: Stage progress · Reviewers · Change Log · Discussion (Overview), diff view (Changes), Scenarios + Run all (Tests). See §3 (revised).
+> 5. **App tab sub-tabs gain `Settings` and `Overrides`**, after `Tasks`, separated by a thin divider from the "monitor" tabs (Summary/Insights/Activity/Tasks). See §4 (revised).
+> 6. **Summary tab decluttered** — merged the legacy `CRs pending review` tile (stale terminology, same entity as Task) into the `Open Tasks` tile, and trimmed the `Open Tasks` list section from a full 5-row duplicate down to a 3-row preview + `View all →` linking to the now-real `Tasks` sub-tab. See §4 (revised).
 
 ---
 
@@ -221,6 +229,10 @@ v4 put env, object breadcrumb, and stage on a persistent 28px bottom bar. Built 
 - States: `◐ Saved` (fades to transparent 3s after save), `◐ Unsaved changes` (persistent while dirty), `⚠ Sync failed` (persistent, click to retry).
 - Absent on Studio Dashboard.
 
+### 5. Env chip becomes a switcher (v6, revised)
+
+The chip stops being read-only. Clicking it opens a small dropdown: `Development / QA / Pre-Live / Live`, each row with a distinct icon (`</>` code / flask / rocket / globe), currently-selected env highlighted. Selecting a different env re-scopes the current app tab's content (see §2.10) — same chip, same risk-scaled styling, now interactive.
+
 ### Net effect
 
 Bottom bar's 28px returns to canvas. Env awareness gets *more* prominent (topbar + ambient border) despite less total chrome than v4's bar.
@@ -323,21 +335,94 @@ The difference from Workflows turned out to be usage pattern, not object richnes
 
 **Takeaway for future categories:** before giving anything a Level-1 tab of its own, ask whether it's really a distinct *object* (deserves its own tab) or just another *view* of an object set already covered by an existing tab (belongs nested as a pinned Level-2 alongside the other views). Getting this wrong twice on Records is a signal to apply this test up front for Connectors and any future category, rather than defaulting to Level-1 and correcting after the fact.
 
+**Superseded (v6):** this conclusion is reverted by §2.9. Comparison need turned out to outweigh casual-browsing protection — kept above for the historical reasoning, not as the current model.
+
 ---
 
-## 3. Task detail — a tab, not a modal
+## 2.9. Round 3 — Records/Rules/Configs items revert to top-level tabs; clutter solved by tab-grouping, not nesting (v6, new)
 
-A Task opens as a tab. Its content:
+### Why we reverted the reversal
+
+§2.7/§2.8 solved a real problem — casual browsing was spawning tab pileup (opening Records Map, clicking three nodes, ending up with six top-level tabs before doing any actual work). Nesting fixed that. But it cost something the client needs more: **comparing multiple objects side-by-side in one session** — a record from one app next to a rule from a different app's workflow, open at the same time. Nesting makes that impossible; anything opened from inside "Records" or a Workflow's "Rules" list is trapped one level down, in a container that can only show one nested item's row of pills at a time, never genuinely side-by-side top-level tabs.
+
+Comparison need > casual-browsing protection. Revert the nesting; solve clutter a different way.
+
+### Model — top-level tabs again, clutter solved by visual grouping
+
+- Clicking a record row in `All Records` (or a node in Records Map) → opens that record as its own **top-level tab**, not nested inside "Records".
+- Clicking a rule in a Workflow's `All rules` list → opens that rule as its own **top-level tab**, not nested inside the Workflow.
+- Clicking an item in any Configs sub-tab (a Badge, a Scheduled Action, etc.) → opens that item as its own **top-level tab**, not nested inside "Configs".
+- `Records` (`All Records` + `Records Map`), a Workflow's `Rules` list, and `Configs` (and its 5 sub-tabs) all stay exactly as browsable entry points — they just stop being *containers* for what you open from them.
+
+**Two entry flows, both must work:**
+1. **Via the list** — open `Records` → click a row/node → opens as an *additional* top-level tab next to `Records` (which stays open, unchanged, still browsable). Click another row → another additional tab. `Records` never closes or gets replaced.
+2. **Direct entry** (⌘K, a quick-link from a Task, Studio app's Recent list, a notification) — opens *only* that item's own top-level tab. `Records` (or the equivalent list tab) does **not** auto-open as a side effect.
+
+**Clutter, solved by grouping instead of containment:**
+- Tabs belonging to the same parent app cluster together spatially in the tab strip — adjacent, not scattered.
+- Each app's cluster gets a subtle shared visual cue — a thin color-tinted underline beneath that group's tabs, muted/desaturated so it doesn't compete with the env chip's color language, distinct per app.
+- A subtle vertical divider separates one app's cluster from the next app's cluster.
+- Tab titles stay object-name-only (no app-name prefix) — the grouping already shows which app a tab belongs to.
+- **Extends to Tasks** (§2.10): a Task tab clusters with its parent app's tab using the same mechanism — a Task belongs to one app, same as a record or rule does.
+
+### Status
+
+Supersedes the "individual objects nest at Level-2/3, never top-level" ruling in §2.7 and §2.8's "What we tried and reverted" conclusion. The nesting primitive itself (pinned Level-2 views like `Preview/Rules/JSON`, `Attributes/Screen Layout/JSON`) is untouched — only the rule that *individually-opened items* must nest is reverted.
+
+---
+
+## 2.10. Task Management — Task is app-scoped, not cross-app (v6, new)
+
+### Resolves an open question from I_model_comparison.md
+
+I doc's item #5 asked whether an env view is per-env or per-app-per-env, and left "All tasks" placement (rail modal vs tab vs Overview sub-tab) unresolved. Both settle from one underlying fact confirmed against the shipped reference: **a Task is a working copy of one app** — not a cross-app changeset. Everything the shipped reference does (Task Overview, Sandbox, Tests, env switching, Settings, Overrides, "All tasks") operates within the context of a single app.
+
+### Where Task Management lives
+
+- **Not** the Studio Dashboard's category filter row (Workflows/Records/Connectors/Configs) — that row is for cross-app browsable object types; Task isn't cross-app, so it doesn't belong there.
+- **Not** a global modal (the shipped reference's "All tasks" is a modal) — a modal would block the AI panel, which is meant to stay usable alongside whatever the user is browsing.
+- **Not** a new floating drawer/panel mechanism — would add a third UI paradigm (modal / drawer / tab) alongside ones we already have reasons for.
+- **Is** the app's own `Tasks` sub-tab (§4) — since Task is scoped to exactly one app, the existing per-app sub-tab mechanism already fits without inventing anything new. `Tasks` stops being an empty placeholder and becomes the real management surface:
+  - Search by title, `+ New Task` button.
+  - Filter pills: `My tasks / Assigned reviews / All`, plus field filters (e.g. `Created by is ...`) with `Clear filters`.
+  - Table: `Title | Stage | Created by`, current/active task marked with a `current` badge.
+- Opening an individual task from that list → opens as a new top-level tab, clustered with its parent app (§2.9's grouping mechanism, extended to Tasks).
+
+### New Task creation
+
+- Modal (not a tab, not a drawer) — a one-off creation action, not a browsing session, so blocking briefly is fine.
+- Fields: title, description. Note: *"This creates a working copy from [env]. Your changes are applied there first, then promoted to higher environment."*
+- Alt path: `Create a hotfix instead` — for urgent fixes (ties to I doc's item #6, still otherwise open).
+
+### Env switcher
+
+- The env chip (§2.6) becomes clickable — opens `Development / QA / Pre-Live / Live`, each with a distinct icon (code / flask / rocket / globe).
+- Switching env re-scopes the current app tab's content rather than opening a separate "env view" tab — resolves I doc's item #5. When scoped to a non-Development env, the app tab shows a `Review this environment` banner (Settings/Overrides editable and deployable directly, `Create hotfix` for urgent fixes) and, if there are unpromoted changes, a banner offering `Promote to [next env]`. Non-Development envs are read-only for direct edits — reflected in the status bar.
+
+### Still open (not resolved this pass)
+
+- Promotion-as-entity (I doc #3) — whether promoting bundles multiple tasks into its own tab-entity, or stays a button.
+- Version history / rollback (I doc #4) — not designed yet.
+- Hotfix gating (I doc #6) — who can create one.
+
+---
+
+## 3. Task detail — a tab, not a modal (v6: sub-tabs revised, see below)
+
+A Task opens as a tab, clustered with its parent app's tab (§2.9). Its content:
 
 - **Sticky header inside the tab:**
 
   ```
-  Task #461 · Add PII condition · Review     [Promote → QA ▾]
+  Task #461 · Add PII condition · Review     [Deploy to Development ▾]
   ```
 
-  The Promote button lives here — pegged to the object it acts on. Actions travel with their objects.
+  The Deploy/Promote button lives here — pegged to the object it acts on. Actions travel with their objects.
 
-- **Body:** Lifecycle stepper (`Draft → Review → Development → QA → Pre-Live → Live`, 6 nodes) · Change Requests by environment (with per-env draft IDs like `DEV-5430.cr`, `QA-1207.cr`) · Scope + Activity two-column.
+- **Body — `Overview / Changes / Tests` sub-tabs (v6, replaces v5's `Workspace/Overview/Changes`):**
+  - **Overview** — Stage progress (`Draft → Review → Development → QA → Pre-Live → Live`) · Created by · Reviewers (+Add) · Change Log (AI-generated on move to review) · Discussion thread.
+  - **Changes** — diff view against the target branch (empty state: *"No changes to review — this change request has no diff against the target branch"*).
+  - **Tests** — Scenarios list, search, `Run all scenarios`, `This branch only` toggle + Filters.
 
 - **AI panel** — first-class right column inside the Task tab. State = **Review** (see §5).
 
@@ -361,15 +446,18 @@ Each action has one place and one behavior.
 
 ---
 
-## 4. Overview sub-tabs — Summary / Insights / Activity
+## 4. Overview sub-tabs — Summary / Insights / Activity / Tasks / Settings / Overrides (v6, expanded)
 
-Same pattern as workflow's `Preview / Rules / JSON` — alternative views of one object (the app), not separate tabs at the browser level.
+Same pattern as workflow's `Preview / Rules / JSON` — alternative views of one object (the app), not separate tabs at the browser level. Row: `Summary | Insights | Activity | Tasks ⏐ Settings | Overrides` — a thin vertical divider sits between `Tasks` and `Settings`, grouping the "monitor" tabs (Summary/Insights/Activity/Tasks) apart from the "config" tabs (Settings/Overrides) without introducing a second UI mechanism (no rail, no separate menu — same row, same tab styling either side of the divider).
 
 | Sub-tab | Purpose | Content |
 |---|---|---|
-| **Summary** | Day-to-day glance | Stats · Pipeline · Open Tasks (top 5) · Recent activity (top 5) |
+| **Summary** | Day-to-day glance | Stats (Workflows / Open Tasks / Drafts — `CRs pending review` merged into the Open Tasks stat, v6) · Pipeline · Open Tasks (top **3**, v6: trimmed from 5 — was duplicating the `Tasks` sub-tab at the same depth) + `View all →` · Recent activity (top 5) |
 | **Insights** | Situation room | People · Health · Environments · Proactive suggestions with inline actions |
 | **Activity** | Timeline archive | Filterable feed (Tasks / Deploys / Comments / AI runs) with search + Load more |
+| **Tasks** (v6: real content, was a placeholder) | Task Management for this app | See §2.10 — search, `+ New Task`, filter pills (`My tasks/Assigned reviews/All`), table (`Title/Stage/Created by`) |
+| **Settings** (v6, new) | App-scoped config | Master-detail: sidebar of setting categories (Business Units, Regions, Roles, Workflow Kind Policies, Record/Workflow Statuses, Email Templates, Integration Tokens, User Groups, Indicator Rules, etc.) + detail panel |
+| **Overrides** (v6, new) | App-scoped per-env exceptions | Master-detail: sidebar of override types (Notification templates, Integration configs, Integration tokens) + detail panel with env sub-tabs (`QA \| Pre-Live \| Live`), general + specific overrides list |
 
 ---
 

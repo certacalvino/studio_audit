@@ -98,6 +98,8 @@ The PM shared a product walkthrough (video + stills) that revealed the shipped m
 
 **Question for PM:** Confirm env view is a first-class page (not a modal). And is it per-env only, or per-app-per-env (which would give us `Mayo Client App · QA` as a tab)?
 
+**✅ Resolved (H v6, §2.10):** not a separate tab — an env switch re-scopes the *current* app tab's content (banners for read-only / unpromoted changes / hotfix, per env). Answers "per-app-per-env": it's per-app, with env as a context filter on that one app tab, not its own page.
+
 ---
 
 ### 6. Hotfix flow — `exists in product`, absent from v3 design
@@ -139,6 +141,8 @@ The product uses a **right rail with global actions** (Deploy sandbox, New task,
 - `Settings / Overrides` → app-level tabs
 
 Tab-first + `⌘K` covers 100% of what the rail does, with less chrome. **Only concede if PM insists** — this is a defendable position.
+
+**✅ Resolved (H v6, §2.10 and §4):** `Settings`/`Overrides` → app-level sub-tabs (confirmed, not just proposed) — added to the app tab's sub-tab row after `Tasks`, separated by a thin divider. `All tasks` → resolved as the app's `Tasks` sub-tab becoming real content (not a modal, not a separate global tab) — settled by the further finding that Task is scoped to one app, not cross-app, which this doc hadn't yet established when it listed the three options.
 
 ---
 
