@@ -28,6 +28,8 @@
 > 7. **No icons on Level-2 sub-tabs, anywhere.** Plain text only — matches the already-plain Level-3 pinned tabs, removing an inconsistency between the two levels.
 > 8. **"+ New tab" must be replaced, not added to** (already in v2/v3 spec, re-enforced after repeatedly getting missed in implementation) — selecting anything from a "New tab" placeholder replaces it in place; if the target is already open elsewhere, focus that tab instead of duplicating.
 >
+> **v7 — Task detail reconsidered as in-place panel, not a top-level tab (July 2026).** Task becomes the one exception to §2.9's "individually-opened items get their own top-level tab" rule. Reasoning: unlike Records/Rules/Configs — peer objects the client routinely wants open side-by-side for comparison — a Task is the container/branch that *scopes* changes to those peer objects, not a peer object itself; it's never compared against another Task in the same frame. Opening a Task (from any entry point) now swaps the current app tab's own canvas into the Task's full view — own header + `Overview/Changes/Tests`, with the app's `Summary/Insights/Activity/Tasks/Settings/Overrides` row hidden while active — and a `← Back` to return. Not a new tab, not a modal. See §3 (revised). Scoped to Task only — Records/Rules/Configs are unaffected and keep §2.9's top-level-tab model unchanged.
+>
 > **v6 — Task Management build-out (July 2026).** Cataloguing the shipped reference's Task Management surface (Task Overview, Sandbox, Tests, env switcher, App Settings, App Overrides, All Tasks) end-to-end surfaced that it needed a real pass to fit our tab-first chrome instead of its own right-rail chrome. Six revisions:
 > 1. **Round 3 — Records/Rules/Configs items revert AGAIN to top-level tabs.** §2.7/§2.8's nesting fix solved tab-pileup from casual browsing, but cost something the client needs more: opening multiple objects side-by-side to compare (a record from one app next to a rule from another app's workflow, at once). Nesting is reverted; clutter is solved differently this time — visual tab-grouping by parent app, not containment. See §2.9 (new).
 > 2. **Task is scoped to one app, not cross-app.** A Task is a working copy/branch of the single app it was created from. This settles where Task Management lives: inside that app's own tab, not the Studio Dashboard's filter row, not a global tab, not a modal. See §2.10 (new).
@@ -104,8 +106,8 @@ The `+ new tab` icon in the tab strip opens the **Studio app**: a full-canvas pa
 **Studio app structure (top to bottom):**
 
 1. **Find or create — plain search bar.** Not AI-branded. `🔍 Search workflows, records, connectors…` + `⌘K`. Below it, 3 literal shortcuts: `+ New workflow` / `+ New record` / `+ Import`. This is navigation, not conversation — see "AI panel stays put" below for why it's deliberately *not* styled like the AI input.
-2. **Recent** — 4 rows of last-touched objects (workflows, records, tasks).
-3. **Object categories** — 2×2 grid of Workflows / Records / Connectors / Configs cards, each with top items + count + a `[+ Create]` / `[↥ Import]` icon pair in the card header + expand link. Each card's expand link opens that category's full list as a Level-1 tab — see §2.8 for how each category resolves once opened.
+2. **Recent** — 4 rows of last-touched objects (workflows, records, connectors). **v7: Tasks dropped from this list** — Task already has a dedicated, always-visible presence (the bottom bar shows the active task at all times; the enriched env/task switcher, §2.10, is one click to any other task) — showing it again here, mixed with genuinely browsable object types, undercuts the distinction the rest of this doc draws between Task (container/branch) and Workflows/Records/Connectors (peer objects you browse to open).
+3. **Object categories** — 2×2 grid of Workflows / Records / Connectors / Advanced cards (v7: "Configs" renamed to "Advanced" to match the shipped reference), each with top items + count + a `[+ Create]` / `[↥ Import]` icon pair in the card header + expand link. Each card's expand link opens that category's full list as a Level-1 tab — see §2.8 for how each category resolves once opened.
 4. **Open Tasks** — a single compact link row (`✦ Open Tasks · 5 · View all in Overview →`), not a full list. The full list lives in Overview; the Studio app only signals it exists.
 
 **Behavior:**
@@ -238,9 +240,22 @@ The chip stops being read-only. Clicking it opens a small dropdown: `Development
 
 Bottom bar's 28px returns to canvas. Env awareness gets *more* prominent (topbar + ambient border) despite less total chrome than v4's bar.
 
+### 6. Bottom bar returns — consolidated, env-tinted, replaces the topbar chip and floating save chip (v7, reverses this section's v5 removal)
+
+Reconsidered against the shipped reference, which keeps exactly this kind of bar always present. Worth reversing the v5 removal because it consolidates three things that were scattered separately — env chip, save/sync state, and now also the active-task context — into one persistent strip, instead of competing for attention in three different corners.
+
+- Same height as the topbar, sits at the very bottom of the viewport, **full width edge to edge** — spans beneath both the AI panel column and the main canvas, not just the main canvas. Matches the IDE precedent this pattern is named after (VS Code's own status bar runs under both the sidebar and the editor); the bar shows app-tab-level state (env, save, active task), not something scoped to one column, so it shouldn't look like it belongs to just one of them.
+- **Env-tinted background, risk-scaled** (v7, corrected — built dark/fixed first, then reconsidered: a solid black bar spanning the full width was the single largest concentration of pure black anywhere in the interface, far more visual weight than a peripheral status bar should carry, and it clashed with the otherwise light, airy aesthetic everywhere else). Same risk-scaled mapping already used on the env chip and ambient border: light green for Development, blue-tinted for QA, amber for Pre-Live, red for Live — text/dot use the darker stop of that same ramp for contrast. This also restores the risk-escalation signal directly in the bar's own fill, which the dark version had to offload entirely onto the dot + the ambient top border.
+- Left: env dot (still risk-scaled: green/blue/amber/red) + env name + `›` + the active task/draft name, e.g. `Development › Reorder External Party fields`. **Clickable affordance: a subtle bounding box with hover state, not a `▾` chevron** (tried first, then reconsidered — a down-facing chevron implies the dropdown opens downward, but this trigger sits in the bottom bar with no room below, so the switcher always opens *upward*; a directional glyph pointing the wrong way is worse than no glyph, and conditionally flipping it to `▴` was more complication than the affordance is worth). A soft bounding box around the env/task text signals "clickable" without making any directional claim. **Two-state weight, refined once more after seeing it built:** matching the Run button's constant solid fill (previous fix) read as too heavy at rest — this label's primary job is conveying information (env + task), being clickable is secondary, so it should look more like text than a button when idle. Settled on: a lighter, quieter fill at rest, darkening to a clearer, more visible fill only on hover — the interactive cue shows up when the user is about to act, not all the time. The Run button itself stays at its constant solid weight regardless of hover, since it's a primary action rather than a secondary affordance on an information label.
+- Right: save/sync state (`Saved` / `Unsaved changes` / `⚠ Sync failed` — same three states the floating chip had) + the Run/preview button.
+- **Replaces, not adds to:** the topbar-right `Task #500 ▾` env/task pill (item 1/item 5's switcher trigger) and its adjacent `▶` Run button both relocate here, along with the floating bottom-right save chip (item 4) — all three are removed from where they currently sit. Nothing about env, task, save state, or run is shown in two places at once. The 🔔 bell and avatar are unaffected and stay in the topbar.
+- Clicking the env/task area on the left opens the same combined env+task switcher already defined in §2.10 — see that section's v7 addition for what now lives inside it.
+
 ---
 
 ## 2.7. Rules — nested tabs, not top-level or drill-down (v5, new)
+
+> **⚠️ Superseded by §2.9 + v7 (see the "Round 3" revert and Prompt AG / §2.9's final grouping model).** This entire section describes the Level-2/3 nesting model (a `Rules ●N` sub-tab with a pinned `All rules` + individual rule *pills* nested inside the workflow tab). That is **no longer the model.** Rules now open as **top-level tabs** that cluster with their parent workflow via emergent grouping (the workflow tab becomes a group-anchor only when a rule is opened under it). The `Rules` sub-tab under a workflow still shows the **list** of rules (`All rules · N`), but there is **no nested Level-3 tab row** (`All rules` pinned pill + rule pills) inside it anymore — clicking a rule in that list opens a top-level tab, it does not add a nested pill. Kept below for historical reasoning only.
 
 ### Problem it addresses
 
@@ -318,11 +333,11 @@ The Studio app's existing **Object categories** grid (§2, item 3) is the single
 
 **Workflows** keep their existing, unchanged pattern (individual workflow = its own Level-1 tab, with `Preview/Rules/JSON` Level-2 and Rules nesting at Level-3 per §2.7) — Workflows are opened deliberately and in small numbers (you open one because you're about to edit it), which hasn't produced the same proliferation risk in testing. If that changes, apply the same nesting fix used for Records.
 
-**Lightweight config objects (Badges, Scheduled Actions, Workflow Prepopulation, Step Copy, Object Selection) → consolidated under one "Configs" Level-1 tab:**
-- `Configs` card → expand → opens a **"Configs" Level-1 tab** with a Level-2 sub-tab row (same plain-text pattern as Preview/Rules/JSON — see "No icons on Level-2 sub-tabs", §2.7): `Badges · Scheduled Actions · Workflow Prepopulation · Step Copy · Object Selection`.
-- Each Level-2 sub-tab defaults to an **"All [type]"** list (e.g., "All Badges · 3") — search, filters, `+ Add`.
-- Clicking an individual item opens it **nested at Level-3**, identical to how an individual rule opens inside a workflow's Rules sub-tab: `All Badges` pinned tab + the opened item's tab alongside it, editable inline (form + JSON), closeable independently.
-- Resolves the shipped product's inconsistency (only 3 of these 5 types were grouped under its own "Configs" tab, with no stated criterion) by treating all five the same way.
+**Lightweight config objects (Badges, Scheduled Actions, Workflow Prepopulation, Step Copy, Object Selection) → consolidated under one "Advanced" group tab (v7 — renamed from "Configs"; behaves exactly like Records):**
+- **Naming: "Advanced," not "Configs"** — aligns with the shipped reference, whose own search/filter category for these types reads `Advanced · 11` (alongside `Workflows`, `Records`, `Connectors`). "Configs" is dropped everywhere in favor of "Advanced."
+- `Advanced` card → expand → opens an **"Advanced" group tab** (an always-grouped category container, same class as Records — not the emergent per-object grouping used for Workflows). Inside it, a sub-tab row: `Badges · Scheduled Actions · Workflow Prepopulation · Step Copy · Object Selection`, each defaulting to an **"All [type]"** list (e.g. "All Badges · 3") with search, filters, `+ Add`.
+- **Individual items behave exactly like records (v7, changed):** clicking an item in any "All [type]" list opens it as a **top-level tab clustered under the "Advanced" group** — the same treatment a record gets under Records — *not* nested at a deeper level. This replaces the earlier Level-3-nesting spec and also replaces the current build's separate per-type group tabs (Badges, Scheduled Actions, etc. as their own standalone group tabs); all five types live under the single "Advanced" group, and their items cluster there just as records cluster under Records.
+- Resolves the shipped product's inconsistency (only 3 of these 5 types were grouped under its own tab, with no stated criterion) by treating all five the same way.
 
 **Connectors** — recognized as a fourth category card in the grid, but not yet audited against the shipped product in enough detail to spec its list/detail pattern. Left open until reference screenshots are available.
 
@@ -359,16 +374,42 @@ Comparison need > casual-browsing protection. Revert the nesting; solve clutter 
 1. **Via the list** — open `Records` → click a row/node → opens as an *additional* top-level tab next to `Records` (which stays open, unchanged, still browsable). Click another row → another additional tab. `Records` never closes or gets replaced.
 2. **Direct entry** (⌘K, a quick-link from a Task, Studio app's Recent list, a notification) — opens *only* that item's own top-level tab. `Records` (or the equivalent list tab) does **not** auto-open as a side effect.
 
-**Clutter, solved by grouping instead of containment:**
-- Tabs belonging to the same parent app cluster together spatially in the tab strip — adjacent, not scattered.
-- Each app's cluster gets a subtle shared visual cue — a thin color-tinted underline beneath that group's tabs, muted/desaturated so it doesn't compete with the env chip's color language, distinct per app.
-- A subtle vertical divider separates one app's cluster from the next app's cluster.
-- Tab titles stay object-name-only (no app-name prefix) — the grouping already shows which app a tab belongs to.
-- **Extends to Tasks** (§2.10): a Task tab clusters with its parent app's tab using the same mechanism — a Task belongs to one app, same as a record or rule does.
+**Clutter, solved by grouping instead of containment (v7, final model):**
+
+The original v6 framing here was app-level color grouping (cluster tabs by parent app, divider between apps). That's moot — a session is **one app at a time** (§2.10: a Task is app-scoped, and you're inside one app's tab), so every tab in the strip already belongs to the same app; there's nothing to distinguish by app color. The only grouping that does real work is **parent-object → its items**, and it applies differently to the two kinds of things in the strip:
+
+- **Category containers (Records, Configs) — always grouped.** `Records` opens as a group tab with its record items clustered after it; `Configs` the same with its items. The group tab is a real, persistent container (it's a category), so it's present whether or not items are open.
+- **Workflows — individual tabs, grouping is emergent.** A Workflow is *not* under a "Workflows" umbrella group (that umbrella is dropped — browse-all-workflows lives in the Studio app's category grid, not the strip). Each open workflow is its own individual top-level tab. A workflow tab only *becomes* a group-anchor when a rule is opened from it: at that point the workflow clusters with its rule item(s) — the workflow tab + its open rules read as one connected group (shared underline, adjacency, group-edge corner rounding per Prompt AC). A workflow with no open rules stays a plain lone tab — no group chrome. Close its last rule → it's a lone tab again.
+- Why the asymmetry is right: Records/Configs are *categories* (a container that exists independent of what's inside), so they anchor a group by nature. A Workflow is an *object*, not a category — it earns a group only when it actually has children (rules) open under it. Grouping appears exactly when there's a live parent-child relationship to show, and not before.
+- **Parent-workflow context still lives in the rule's content too:** the Rule Editor tab carries a small breadcrumb — `Subcontractor Form / Rules / set_name_and_complete` — at the top of its own content (reusing the Task/§3 and Settings-record/§4 breadcrumb). Belt-and-suspenders with the strip grouping: the cluster shows which workflow at a glance, the breadcrumb confirms it inside.
+- **Tasks** open in-place, never as a top-level tab (§3) — they don't participate in this strip grouping at all.
+- **Grouped tabs read as one connected strip, not separate pills (v7, new):** every tab within a group — hovered or selected, first, middle, or last — shares the same hover background treatment and sizing/padding as any other tab in that group, not just the first one. Corner rounding follows the group boundary, not each individual tab: a tab in the middle of a group has square (flat) corners on the sides touching its neighbors, and only the tabs at the group's outer edges (leftmost/rightmost) get rounded corners. This is what makes the group read as one continuous connected unit rather than a row of individually rounded pills with gaps.
 
 ### Status
 
 Supersedes the "individual objects nest at Level-2/3, never top-level" ruling in §2.7 and §2.8's "What we tried and reverted" conclusion. The nesting primitive itself (pinned Level-2 views like `Preview/Rules/JSON`, `Attributes/Screen Layout/JSON`) is untouched — only the rule that *individually-opened items* must nest is reverted.
+
+### Workflow page — Preview canvas + Rules right panel + JSON bottom panel (v7, replaces exclusive Preview/Rules/JSON sub-tabs)
+
+The old model was three mutually-exclusive sub-tabs (`Preview | Rules | JSON`) — you could only see one at a time. That broke the most common real need: seeing a rule (or the JSON) *against* the live form Preview at the same time. Now that heavy rule **editing** moved out to its own top-level tab (§2.9 grouping — a rule opens as a tab clustered with its workflow), the workflow page's own job shrinks to **view/inspect**, which unlocks a better layout. Built incrementally (AK step 1–4: empty companion shell → Rules list into it → Rules/JSON toggle → remove old sub-tabs), then the JSON half was split out to its own region after the toggle-in-one-panel proved too cramped for wide JSON.
+
+**Final layout — a page top bar + three regions inside the workflow content:**
+```
+┌─────────────────────────────────────────────┐
+│  Subcontractor Form        [Rules·3] [JSON]  │  ← page top bar
+├──────────────────────┬──────────────────────┤
+│  Preview             │                       │
+│  ──────────────────  │        Rules          │
+│  JSON (bottom panel) │                       │
+└──────────────────────┴──────────────────────┘
+```
+- **Page top bar** — the workflow name on the left; two toggle icons on the right, `Rules · N` and `JSON`. This is the single, unified trigger location for both panels (replacing two mismatched collapsed affordances — a vertical Rules strip and a bottom JSON handle — that were hard to make legible/consistent). It also gives the workflow name a home on the page (previously only in the tab). Each icon shows an active/highlighted state when its panel is open; closed = inactive icon, no leftover strip or handle.
+- **Preview** = the primary canvas, always present, top-left. Owns the working space; the form/steps builder needs the room.
+- **Rules** = a panel on the **right**, full height, toggled by the top bar's `Rules · N` icon. Compact list only (`All rules · N`, warnings/unused, `+ Add`, search) — *not* an editing surface; clicking a rule (`↗`) opens that rule's own top-level tab (the full When/Conditions/Actions editor, §2.9).
+- **JSON** = a **bottom panel** docked under Preview (not in the right panel — wide JSON was clipped in a narrow side slot), toggled by the top bar's `JSON` icon. When open, its own header carries: `⤢`/`⤡` fullscreen-toggle (expand up over Preview ↔ restore to default height, icon reflects state) and `×` close. JSON as read/inspect, next to the live Preview instead of a screen you switch away to.
+- Net: no more exclusive Preview/Rules/JSON switching, and no collapsed strips/handles; Preview never disappears; both panels are toggled from one top bar. All combinations reachable: Preview alone, Preview + Rules, Preview + JSON, all three, or JSON fullscreen.
+
+*(The rule **editor** page itself — the full-width top-level tab — has its own separate open issues: validation error placement, nested-condition-builder readability, section density. Tracked separately, not part of this workflow-page layout change.)*
 
 ---
 
@@ -387,7 +428,7 @@ I doc's item #5 asked whether an env view is per-env or per-app-per-env, and lef
   - Search by title, `+ New Task` button.
   - Filter pills: `My tasks / Assigned reviews / All`, plus field filters (e.g. `Created by is ...`) with `Clear filters`.
   - Table: `Title | Stage | Created by`, current/active task marked with a `current` badge.
-- Opening an individual task from that list → opens as a new top-level tab, clustered with its parent app (§2.9's grouping mechanism, extended to Tasks).
+- Opening an individual task from that list → **(v7, revised — see §3)** swaps the app tab's own canvas into the Task's full view, in place. No longer a new top-level tab.
 
 ### New Task creation
 
@@ -411,6 +452,10 @@ The Task ID's own env prefix (`DEV-6004`, confirmed in the shipped reference's T
 
 Switching env still re-scopes the current app tab's content for browsing (resolves I doc's item #5): a non-Development env shows a `Review this environment` banner (Settings/Overrides editable and deployable directly, `Create hotfix` for urgent fixes) and, if there are unpromoted changes, a banner offering `Promote to [next env]`. Non-Development envs are read-only for direct edits — reflected in the status bar.
 
+### Switcher enriched with the current task's context, no separate tooltip (v7, new)
+
+The shipped reference shows a separate hover tooltip on the bottom bar's task name (`New` → `DEV-5664 · Needs update` / `Task` / `Target: Development` / `Owner: CC`) *in addition to* its own task switcher — two mechanisms doing related jobs. Combined into one instead: the active task's row inside the env/task switcher dropdown (the same combined dropdown from the table above) is enriched with this context directly — ID, status, target env, owner — rather than adding a second hover-tooltip mechanism alongside it. Other listed tasks in the same dropdown stay simple (title + stage only, matching the Tasks table), since that level of detail only matters for the one you're actively in.
+
 ### Still open (not resolved this pass)
 
 - Promotion-as-entity (I doc #3) — whether promoting bundles multiple tasks into its own tab-entity, or stays a button.
@@ -419,26 +464,45 @@ Switching env still re-scopes the current app tab's content for browsing (resolv
 
 ---
 
-## 3. Task detail — a tab, not a modal (v6: sub-tabs revised, see below)
+## 3. Task detail — in-place panel within the app tab, not a new tab (v7, revised)
 
-A Task opens as a tab, clustered with its parent app's tab (§2.9). Its content:
+### Why Task is the one exception to §2.9
 
-- **Sticky header inside the tab:**
+§2.9 reverted Records/Rules/Configs to top-level tabs because the client needs to compare those objects side-by-side — a record from one app next to a rule from another, open at once. Task doesn't share that need: it isn't a peer object being compared against another Task in the same frame, it's the *container* — the branch/scope that changes to those peer objects live inside. Giving it a top-level tab makes it compete visually with the objects it contains. So Task reverses back to a single-slot, in-place view; Records/Rules/Configs are unaffected and keep §2.9's top-level-tab model exactly as-is.
 
-  ```
-  Task #461 · Add PII condition · Review     [Deploy to Development ▾]
-  ```
+### Model
 
-  The Deploy/Promote button lives here — pegged to the object it acts on. Actions travel with their objects.
+- **Identity line and tab row are pinned to a fixed position**, directly under the top chrome — a single-line identity row, then the tab row immediately beneath it, always in that order, at the same height, regardless of what renders below:
+  - **App level:** the identity line is just the app name (`Mayo Client App`, plain, muted — no back affordance, nothing to return to from here). The tab row beneath it is `Summary/Insights/Activity/Tasks ⏐ Settings/Overrides` (§4).
+  - **Task level:** the identity line becomes a breadcrumb — `← Mayo Client App / Reorder External Party fields` — with `←` as its own click target (→ returns to the app's `Tasks` sub-tab) and `Mayo Client App` as a second, independent click target (→ returns to `Summary`); the Task's own name is the current, non-clickable segment. The tab row beneath it becomes `Workspace / Overview / Changes / Tests` (v7, `Workspace` restored as the leftmost tab and the default landing — see "Workspace restored" below).
+- **Everything else is tab content, not a separate header zone** — no variable-height block sits between the identity line and the tab row, so the tab row never shifts position between states:
+  - At the app level, each of `Summary/Insights/Activity/Tasks/Settings/Overrides` supplies its own content top to bottom. Only `Summary` happens to open with a heading (`Mayo Client App` / `App overview`) — others (e.g. `Tasks`, which opens straight into the search bar + table) don't repeat it.
+  - At the Task level, the chip row (`TASK #461` + stage) + title + owner/reviewer/created/touches metadata sits once, shared across all four of `Workspace / Overview / Changes / Tests` — same object, same actions regardless of which view is open, only the content beneath switches. **`Promote/Deploy` sits flush right on the tab row itself** (`Workspace | Overview | Changes | Tests` ................. `Promote → QA`), same move already made for `+ Add` on Settings/Overrides categories (§4) — the page's primary action shares the tab row instead of owning a separate row. The chip row keeps `TASK #461` + stage with nothing to its right; no information is lost since the full stage stepper is already visible in `Overview`'s `Lifecycle` section below.
+    - **Workspace** (v7, restored — see below) — search bar (`Search workflows, records, and sections in this task…`) + the app's object categories scoped to this Task's branch: `Workflows` (Create empty workflow / Import from JSON), `Records` (Records Map), `Scheduled Actions`, `Badges`, `Workflow Prepopulation Configs`, `Step Copy Configurations`, `Object Selection Configs` — same list structure as the Studio app's own category grid (§2, item 3), just scoped to one Task's changes instead of the whole app.
+    - **Overview** — Stage progress (`Draft → Review → Development → QA → Pre-Live → Live`) · Created by · Reviewers (+Add) · Change Log (AI-generated on move to review) · Discussion thread.
+    - **Changes** — diff view against the target branch (empty state: *"No changes to review — this change request has no diff against the target branch"*).
+    - **Tests** — Scenarios list, search, `Run all scenarios`, `This branch only` toggle + Filters.
+    
+    This mirrors how a Workflow's own header already stays constant across its `Preview/Rules/JSON` views.
 
-- **Body — `Overview / Changes / Tests` sub-tabs (v6, replaces v5's `Workspace/Overview/Changes`):**
-  - **Overview** — Stage progress (`Draft → Review → Development → QA → Pre-Live → Live`) · Created by · Reviewers (+Add) · Change Log (AI-generated on move to review) · Discussion thread.
-  - **Changes** — diff view against the target branch (empty state: *"No changes to review — this change request has no diff against the target branch"*).
-  - **Tests** — Scenarios list, search, `Run all scenarios`, `This branch only` toggle + Filters.
+### Workspace restored as a fourth tab (v7, reverses this section's earlier "Workspace dropped" note)
 
-- **AI panel** — first-class right column inside the Task tab. State = **Review** (see §5).
+v6 dropped `Workspace`, reasoning that "working on the task" already happens via the app's own top-level Workflow/Record tabs (§2.9), so a dedicated per-task browsing screen was redundant. Checked directly against the shipped reference and that turned out wrong: the reference treats `Workspace` (the object browser above) and `Task Overview` (`Overview/Changes/Tests`) as genuinely distinct modes, connected by a "Task Overview" button — not the same screen. The distinction that makes both worth keeping: `Workspace` is the *building* mode (actively working — browsing and jumping into the objects this task touches), `Overview` is the *review* mode (stage, reviewers, discussion, diff, tests — everything relevant once you're ready to move the task along toward deploy). Same relationship as a repo's file browser vs. its Pull Request page — related, but not redundant.
 
-### Entry points to a Task (multiple, all consistent)
+Rather than copy the reference's separate-screen-plus-button mechanic (which would introduce a second navigation pattern alongside the fixed tab row this whole model is built on), `Workspace` is added back as a fourth tab, leftmost in the row, and becomes the **default tab a Task opens into** — matching the reference's own default landing. `Overview/Changes/Tests` are unchanged in content; only their position shifts one slot right to make room.
+
+### Switch-to-current CTA in the Task header (v7, new)
+
+Opening a Task (viewing it) and making it the current active working branch are two separate actions (same split as the Tasks list, §4). The header carries the switch action: a fixed-width `Switch task` button in the chip row (next to `Promote`, secondary weight so it doesn't compete with the primary Promote action). **Constant width across all three states; only the leading icon swaps** — `⇄ Switch task` (idle) → `⟳ Switch task` (loading, spinner replaces the icon while the branch re-scope runs) → `✓ Current task` (disabled/info style, same width, no action). No text reflow or size change between states. This mirrors the list's leading radio: same two states (is-current / switch-to-current), just surfaced as a header button on the detail page instead of a row indicator.
+
+**Single source of truth across all three surfaces (v7, critical):** the list's filled radio (§4), this header CTA, and the bottom bar's active-task label (§2.6 item 6) all reflect *one* "current task" value. Switching from any one of them updates the other two immediately — click a radio in the list → the bottom bar's task name changes and the previously-current row's radio empties; switch from the header → the list radio and bottom bar follow. They can never disagree (the build currently shows a mismatch — list radio on one task, bottom bar naming another — which is the bug this rule closes).
+- (Three layouts were tried before landing here: a standalone `← Back` row above the header, which rendered with an undefined background; `←` folded into the sub-tab row via a divider, which risked reading as a fourth tab; and title-before-tabs, which fixed both problems but left the tab row's vertical position dependent on how tall that particular header happened to be — visibly lower for a Task than for the App. Pinning the identity line + tab row to a fixed slot and treating the title as tab content removes that last inconsistency: the tab row sits at the same position in every state.)
+- A Task never opens as a top-level tab. Opening one — from any entry point — replaces the current app tab's own canvas with this structure.
+- The parent app's own tab identity (icon + name, e.g. "Mayo Client App") stays fully expanded and visually active the entire time a Task view is showing — it must never collapse to an icon-only state. Active should read as *more* visible, not less; an active tab that shrinks to a bare icon reads as though navigation left the app, which contradicts the model (the user never left the app tab, only its canvas swapped).
+- **AI panel is unaffected** — still the first-class right column of the app tab, still switches to **Review** state while a Task is active (§5). Only the main canvas swaps; AI placement doesn't move.
+- If a Task view is already showing and a *different* Task is opened (e.g. a Notification link to Task #483 while #461 is on screen), it swaps directly — no detour through the breadcrumb first.
+
+### Entry points to a Task (same five, new behavior)
 
 - **Overview → Open Tasks** section → click a row
 - **Studio app → Open Tasks** section → click a row
@@ -446,30 +510,63 @@ A Task opens as a tab, clustered with its parent app's tab (§2.9). Its content:
 - **Recent Activity** → click any `Task #461` reference
 - **Notifications** → click the Task link
 
-All open the same tab. No dropdowns, no dual-behavior pills, no context switches.
+All five now converge on the same in-place swap instead of opening a tab. If the entry point lives outside the Task's own app (e.g. a Dashboard-level notification), it first focuses/opens that app's own tab, then performs the swap — consistent with Task being app-scoped (§2.10). No dropdowns, no dual-behavior pills, no context switches.
 
-### Management actions
+### Management actions (revised)
 
-- **Close a Task tab** → the `×` on the tab (browser-native).
-- **Copy link / share** → `⋯` icon in the tab's own top-right, next to the Promote button.
-- **Switch between Tasks** → click a different tab, or `⌘⇧←/→`.
+- **Leave a Task view** → click `←` in the breadcrumb (no tab `×` — there's no tab to close).
+- **Copy link / share** → `⋯` icon beside the Promote button, in the shared Task header.
+- **Switch between Tasks** → `←` back to the `Tasks` list, then click a different row. No `⌘⇧←/→` cycling — Tasks no longer have tabs to cycle between.
 
-Each action has one place and one behavior.
+Each action still has one place and one behavior.
+
+### Trade-off accepted
+
+Two Tasks can no longer sit open side-by-side the way two Records or two Rules can — this model is single-slot by design. Not a gap the client has raised: the same reasoning that makes Task the exception (container/scope, not a peer object) is why giving up side-by-side comparison here is acceptable, unlike when the equivalent nesting was tried on Records (§2.8, reverted).
 
 ---
 
-## 4. Overview sub-tabs — Summary / Insights / Activity / Tasks / Settings / Overrides (v6, expanded)
+## 4. Overview sub-tabs — Summary / Insights / Activity / Tasks / Settings / Overrides (v6, expanded; v7 position + table detail)
 
-Same pattern as workflow's `Preview / Rules / JSON` — alternative views of one object (the app), not separate tabs at the browser level. Row: `Summary | Insights | Activity | Tasks ⏐ Settings | Overrides` — a thin vertical divider sits between `Tasks` and `Settings`, grouping the "monitor" tabs (Summary/Insights/Activity/Tasks) apart from the "config" tabs (Settings/Overrides) without introducing a second UI mechanism (no rail, no separate menu — same row, same tab styling either side of the divider).
+Same pattern as workflow's `Preview / Rules / JSON` — alternative views of one object (the app), not separate tabs at the browser level. Row: `Summary | Insights | Activity | Tasks` clustered left, `Settings | Overrides` pushed to the row's right edge by a flexible spacer — grouping the "monitor" tabs apart from the "config" tabs through whitespace alone, not a divider glyph. (v7, revised: the original spec used a single thin vertical divider between `Tasks` and `Settings`; building it produced a divider on *both* sides of `Tasks`, isolating it as its own group instead of clustering it with `Summary/Insights/Activity`. Rather than just fixing the stray divider, the divider approach itself is dropped — a right-aligned group reads as "these are a different category" without adding any line element, and avoids reopening §2.7's settled "no icons on Level-2 sub-tabs" decision, which an icon-based fix would have risked.) Per §3's v7 revision, this row sits directly beneath the single-line `Mayo Client App` identity line, in the same fixed slot the `Overview/Changes/Tests` row occupies when a Task is open — the app's own `Mayo Client App` / `App overview` heading is `Summary`'s own tab content, not a separate zone above this row.
 
 | Sub-tab | Purpose | Content |
 |---|---|---|
 | **Summary** | Day-to-day glance | Stats (Workflows / Open Tasks / CRs pending review — kept distinct, v6: not a duplicate, CRs are separate per-env sub-entities / Drafts) · Pipeline · Open Tasks (top 5) · Recent activity (top 5) |
 | **Insights** | Situation room | People · Health · Environments · Proactive suggestions with inline actions |
 | **Activity** | Timeline archive | Filterable feed (Tasks / Deploys / Comments / AI runs) with search + Load more |
-| **Tasks** (v6: real content, was a placeholder) | Task Management for this app | See §2.10 — search, `+ New Task`, filter pills (`My tasks/Assigned reviews/All`), table (`Title/Stage/Created by`) |
-| **Settings** (v6, new) | App-scoped config | Master-detail: sidebar of setting categories (Business Units, Regions, Roles, Workflow Kind Policies, Record/Workflow Statuses, Email Templates, Integration Tokens, User Groups, Indicator Rules, etc.) + detail panel |
-| **Overrides** (v6, new) | App-scoped per-env exceptions | Master-detail: sidebar of override types (Notification templates, Integration configs, Integration tokens) + detail panel with env sub-tabs (`QA \| Pre-Live \| Live`), general + specific overrides list |
+| **Tasks** (v6: real content, was a placeholder; v7: table enriched) | Task Management for this app | See §2.10 — search, `+ New Task`, filter pills (`My tasks/Assigned reviews/All`), table (`Title/Stage/Created by`). **v7 additions:** row hover reveals `Copy / Archive` — **not** `Edit` (dropped: built first alongside the other two, then cut — the row click already opens the Task, which is where editing happens; a separate `Edit` icon duplicated that same action) and **not** "Duplicate" (naming corrected — the shipped reference's own rail UI calls this action `Copy` too, e.g. "Copy hotfix to Pre-Live," and our own build's tooltip already read `Copy task`; "Duplicate" was never actually the right label). `Copy` opens the existing `+ New Task` modal pre-filled with the source task's title/description (e.g. `Reorder External Party fields (copy)`), so the user can adjust before creating — not a silent clone. The modal's `Create a hotfix instead →` footer link (§2.10's "New Task creation" alt path) is hidden when entered via `Copy` — that link exists to resolve ambiguity when starting from a blank `+ New Task`, and there's no such ambiguity when copying a specific, already-typed task. Everything else in the modal (title, pre-filled fields, `Cancel`/`Create task`) stays the same regardless of entry point. `Stage` renders as a risk-scaled colored badge instead of plain text, reusing the env chip's color mapping; a `Hotfix` badge marks tasks created via the hotfix path. **Switch-to-current: one fixed-size CTA per row (v7, revised from the leading-radio idea).** A single button in the row's action area conveys both state and action — no separate leading dot/radio (that would be redundant with the button's own Current state). It holds a **constant width across all states; only the leading icon swaps** (no text reflow): `⇄ Switch` (idle) → `⟳ Switch` (loading — spinner replaces the switch icon, same width) → `✓ Current` (disabled/info style, same width). Behavior: the current task's row always shows the disabled `✓ Current` button; every other row reveals `⇄ Switch` on hover (alongside Copy/Archive); clicking it swaps the icon to a spinner while the branch re-scope runs (switching re-scopes the whole app and takes real time — the loading state is why this is a button, not a radio), then on completion that row becomes `✓ Current` and the bottom bar updates (single source of truth, §3). Replaces the old standalone `Current` badge. Row click (outside the button) still opens the task (§3) |
+| **Settings** (v6, new; v7: master-detail dropped) | App-scoped config | List of setting categories (Business Units, Regions, Roles, Workflow Kind Policies, Record/Workflow Statuses, Email Templates, Integration Tokens, User Groups, Indicator Rules, etc.), full content width, no side-by-side detail pane |
+| **Overrides** (v6, new; v7: master-detail dropped) | App-scoped per-env exceptions | List of override types (Notification templates, Integration configs, Integration tokens), full content width, no side-by-side detail pane |
+
+### Settings/Overrides categories — left category rail (v7.1, supersedes the sub-tab-row below)
+
+> **⚠️ Superseded within v7.** The Level-2 sub-tab-row model described just below was built, then reversed once the real category count landed: the shipped reference has **~18 Settings categories** (Business Units, Regions, Roles, Adjudication Options, Role Group Configs, Workflow Kind Policies, Config Translations, Record Statuses, Workflow Statuses, Comment Flag Options, Email Attachments, Email Templates, Pre-defined Options, Integration Tokens, Context Templates, Integration Configs, User Groups, Indicator Rules) — a horizontal sub-tab row can't hold that many. Settings (and Overrides, for consistency) now use a **left category rail + detail** inside the sub-tab's content area — the standard settings pattern, scales to 18+.
+>
+> Placement: the rail lives *inside* the Settings content area (to the right of the global AI panel), styled as Settings' own internal nav — subtle/contained, not a second global chrome bar competing with the AI panel. Hierarchy: `AI panel (global) → [Settings = category rail + detail]`.
+>
+> Per-category content: title · `In-App / All` count tabs (e.g. `In-App 9 · All 249`) · search · `+ Add` · a type-appropriate table (colored status dots for Record/Workflow Statuses; Tag/Description/Options for Pre-defined Options; etc.) · per-row actions (promote/deploy cloud icon, edit, delete).
+>
+> Rich detail editors: e.g. Email Templates opens a full edit form (Slug read-only, Display title, Subject, HTML body Source/Preview, Plain text fallback, From name/email) with **per-field environment overrides** (a popover listing QA/Pre-Live/Live override inputs + "general override set" note + separate Save) — the same per-env override concept as the Overrides tab.
+>
+> The breadcrumb-swap for individual records (§4 / Prompt N) still applies: clicking a row opens that record in-place with a breadcrumb, not a top-level tab.
+
+### Settings/Overrides categories — Level-2 sub-tab row, matching Configs (v7, revised)
+
+Master-detail (sidebar + side-by-side detail pane) is dropped — building it produced a narrow fixed-width list with a large unused gap where the detail pane would sit. A breadcrumb-and-swap mechanic (reusing §3's Task pattern) was considered next and also dropped: `Settings`/`Overrides` categories are a small, fixed, enumerable set — structurally the same as `Configs`' own categories (§2.8: `Badges · Scheduled Actions · Workflow Prepopulation · Step Copy · Object Selection`), not a dynamic object you drill into. Reusing a breadcrumb here would solve an already-solved problem with a second mechanism.
+
+**Model:** a Level-2 sub-tab row appears directly below the main `Summary/Insights/Activity/Tasks⏐Settings/Overrides` row, exactly like `Configs`:
+- `Settings` active → sub-tab row = `Business Units | Roles | Adjudication Options | Notifications` (etc.), first category selected by default, content beneath is that category's own table (e.g. `Name / Code / Regions` + `Add` for Business Units), full content width.
+- `Overrides` active → sub-tab row = `Notification templates | Integration configs | Integration tokens`, same behavior.
+- Switching categories is one click on the sub-tab row — no breadcrumb, no list-then-drill-in step.
+- **An individual row *inside* a category's table (e.g. one specific Integration Token) does *not* open as a top-level tab** (v7, corrected — this section originally said it should, matching Configs items per §2.9; built and reviewed, then reversed). It follows the same breadcrumb-and-swap mechanic as Task (§3) instead: the identity line becomes `← Mayo Client App / Integration tokens / CI deploy token`, the parent app's tab stays expanded and active exactly as it does for Task, and the content swaps to that record's own detail. Reasoning: a single token/business unit/role isn't a peer object the client needs open side-by-side with another one of its kind (unlike Records/Rules, which is why §2.9 exists) — comparison across environments already happens inside the category's own table (e.g. Dev and Live tokens listed together), not by opening two tabs. This extends the same exception Task already carved out — administrative, scoped records don't need §2.9's top-level-tab treatment, only genuinely comparable peer objects do.
+- **No redundant name field inside the record's own detail card.** Built first with the record's name repeated as the first field inside its detail card (e.g. `North America`'s card leading with `Name: North America`, or `CI deploy token`'s card leading with `Token name: CI deploy token`) — triple-redundant, since the same string already appears as the breadcrumb's current segment and as the page's own title directly above the card. The name/title field is dropped from the card; it starts with the next genuinely distinct field (`Code`, `Regions` for a Business Unit; `Environment`, `Last rotated` for a token).
+- The boxed-card-with-chevron list built first read as a mobile settings screen and is dropped along with the master-detail/breadcrumb ideas — there's no list to click into anymore, since the sub-tab row makes every category one click away already.
+- **Record detail card uses full content width**, same rule already applied to the category table and the Tasks table — a record's detail card was built first in a narrow fixed column with dead space beside it, same class of issue as the earlier category-list width bug, and gets the same fix.
+
+**Visual weight of the category row:** stacking two full-size underline-tab rows directly on top of each other (the main `Summary/Insights/.../Settings/Overrides` row, then the category row) reads as ambiguous hierarchy — both look like peers. The fix is *not* to switch the category row to the pill/chip style used by `Activity`'s filters (`All | Changes | Deploys | Comments | AI runs`) or `Tasks`' filter pills (`My tasks/Assigned reviews/All`) — that style specifically means "filter on one shared list," which doesn't apply here (each category is distinct content, not a filtered view of one dataset — same reasoning that keeps `Configs`' sub-tabs on the underline style per §2.7). Instead, the category row keeps the underline mechanic but at reduced visual weight: smaller text (12px vs. the main row's 14px) and a muted background band beneath it, distinct from the plain white main row — signals "one level down" without borrowing filter-pill semantics that would misrepresent what the row does. (A first build pass rendered the category row as filled/bordered segmented buttons instead — corrected back to the underline mechanic; a solid-fill pill reads as the same "closeable dynamic item" language reserved elsewhere in the system, which these categories are not.)
+
+**`+ Add` position:** sits flush right on the *same row* as the category tabs, not on a separate heading row beneath them. An earlier pass repeated the active category's name as its own heading (`Business Units` in large text, directly under a `Business Units` tab already shown as active) with `+ Add` beside it — redundant, and it costs an extra row. Dropping that heading row and placing `+ Add` at the tab row's height removes the repetition and tightens the layout; the table's own column header (`NAME / CODE / REGIONS`) is the next thing after the tabs.
 
 ---
 
@@ -507,7 +604,7 @@ The AI's content must always match the object in the currently active tab. Cross
 | **Dashboard adaptive scale** | ✓ Resolved (v5) | 3 tiers by app count (1 / 3-8 / 9+) — large-org chrome (sort, table, pagination) only renders when there's actual scale to justify it. See §2.5 |
 | **Dashboard as mandatory landing** | ✓ Resolved (v5) | Only for 2+ apps. Exactly 1 app → skip Dashboard, login lands directly in that app's Overview. See §2.5.1 |
 | **New App creation** | ✓ Resolved (v5) | Dropdown (not modal), extensible type list (Blank / Template-based / Training), trigger in Dashboard topbar |
-| **Detail access pattern** | ✓ Resolved (v2) | Tab (with AI as first-class right column) |
+| **Detail access pattern** | ✓ Resolved (v2) | Tab (with AI as first-class right column) — applies to Records/Rules/Configs objects; Task is the exception, see below |
 | **Chrome minimalism** | ✓ Resolved (v2) | Sidebar + rail removed; Studio app is the entry point |
 | **Task tab AI state name** | ✓ Resolved (v3) | **Review** — chips: Summarize diff · Suggest reviewers · Check compliance risks |
 | **App identity in chrome** | ✓ Resolved (v3) | App name IS the leftmost tab; no duplication in topbar |
@@ -520,7 +617,7 @@ The AI's content must always match the object in the currently active tab. Cross
 | **Version history + rollback** (per-env deployed-versions list + Switch to version) | Open | Design directly from the PM's product walkthrough — see `I_model_comparison.md` §4 |
 | **Project layer** (workspace-of-agent above Task, per PM verbal mention) | 🔴 Blocked | Interpretation unclear (agrupador vs agent workspace); needs PM confirmation — this one genuinely needs a PM answer, not a doc |
 | **App switcher dropdown** — visual design | Deferred | Click `[S]` → Dashboard; from there enter any app. Explicit switcher dropdown deprioritized. |
-| **Tab strip overflow behavior** | Open (post-MVP) | Horizontal scroll + `⋯` overflow menu — needed when 8+ tabs open |
+| **Tab strip overflow behavior** | ✓ Resolved (v7) | Progressive: tabs shrink responsively as the strip fills → labels truncate with ellipsis once at min width → `⋯` overflow menu only as the last resort, when even min-width tabs can't fit. `⋯` must never appear while tabs still fit (build bug: it was showing with 3 tabs and ample space). |
 | **Global notification "View all" page** | Open (post-MVP) | Panel exists; dedicated page for archive/search TBD |
 
 ---
@@ -532,12 +629,12 @@ Live in **Claude Design** and **Figma** (`Studio — Navigation Explorations`, f
 - **Studio Dashboard** — adaptive by app count (3 tiers, §2.5): 1-app orgs skip it as landing entirely; 2+ renders Tier 1/2/3 content accordingly. Topbar `+ New app` dropdown (Blank / Template-based / Training), extensible list.
 - **App Overview** with 3 sub-tabs (Summary / Insights / Activity) — Summary has enriched Pipeline (per-env sub-metadata + active deploy indicator), Needs your attention, Team row, Open Tasks with Live badge + reviewer designation, Recent Activity with deploy events
 - **Task detail tab** — sticky header with Promote → QA button, lifecycle stepper (6 nodes: `Draft → Review → Development → QA → Pre-Live → Live`), Change Requests per env with `.cr` suffix (`CR #461 → DEV-5430.cr`, `CR #483 → QA-1207.cr`), Scope + Activity two-column
-- **Env chip + ambient border** (v5) — topbar-right risk-scaled chip (Dev/QA subtle, Pre-Live/Live escalating) + 2px top border for Pre-Live/Live; floating save/sync chip bottom-right. Bottom bar removed.
+- **Env chip + ambient border** (v5) — topbar-right risk-scaled chip (Dev/QA subtle, Pre-Live/Live escalating) + 2px top border for Pre-Live/Live; floating save/sync chip bottom-right. Bottom bar removed. **Superseded (v7):** the topbar chip and floating save chip are both replaced by one dark, always-present bottom bar consolidating env + save state + active task context; the ambient top border stays, unchanged. See §2.6 item 6.
 - **Rules nested tabs** (v5) — Level-2 `Preview/Rules/JSON` row with live badge count, Level-3 `All rules` pinned + dynamic rule tabs, all inside the parent workflow tab (§2.7)
 - **Studio app "+ New Tab"** — plain search bar (not AI-branded) · Recent · Object categories with Create/Import icons · Open Tasks compact link · gray bg + card treatment matching Overview
 - **AI state-aware content** for Discovery (Overview / Dashboard-less / Studio app) · Ready (Workflow tab without task) · Execution (Workflow with active task) · Review (Task tab)
 - **Notification panel** — bell dropdown with unread events, actionable inline (Review · View · Take over), "Mark all read", "View all →" footer
-- **Avatar menu** — profile / preferences / team / help / shortcuts / sign out
+- **Avatar menu** — profile / preferences / team / help / shortcuts / sign out. **v7, expanded:** also holds app-scoped actions folded in from the shipped reference's separate app-icon menu (`Edit name & description`, `What's new`, `Activity Logs`, `Sync from Admin Panel`, `Report Issue`, `Delete app`) rather than introducing a second menu trigger — grouped `App` / `Workspace` / `Account` sections, destructive actions (`Delete app`, `Sign out`) last.
 - **Minimal chrome** across all in-app tabs — `[S]` (returns to Dashboard) · tab strip · env chip · 🔔 · avatar
 
 Figma file: https://www.figma.com/design/Mg3plZn2b0tadSOZAP3ndX/Studio-%E2%80%94-Navigation-Explorations
@@ -586,11 +683,11 @@ Figma file: https://www.figma.com/design/Mg3plZn2b0tadSOZAP3ndX/Studio-%E2%80%94
 2. **Relabel existing Change Requests page as "Tasks list"** — mostly relabel, not a rebuild.
 3. **Empty state for Open Tasks** (Overview + Studio app + Dashboard).
 4. **1→2 app transition nudge** — one-time callout when an org's 2nd app is created, since login behavior changes at that threshold (§2.5.1).
-5. **Tab strip overflow behavior** (many tabs open — horizontal scroll + `⋯` menu). Post-MVP.
+5. **Tab strip overflow behavior** — ✓ resolved (v7): progressive shrink → ellipsis truncation → `⋯` menu only as last resort. See Open decisions table.
 6. **Global search "View all"** dedicated page — post-MVP, cross-app search results view.
 7. **Notification "View all" page** — post-MVP.
 
 ---
 
 *Owner: Chris Calviño · chris@chriscalvino.com*
-*v5 — post-implementation audit, July 2026. Navigation depth and Dashboard scale-reality fixes on top of v4's product alignment. Structural gaps captured in `I_model_comparison.md`.*
+*v7 — Task detail reconsidered as an in-place panel swap within the app tab, not a top-level tab (§3) — the one exception to §2.9's tab-first model. Refined after build review: identity line + tab row pinned to a fixed position (breadcrumb replaces the standalone Back row), title demoted to tab content, Workspace restored as a fourth tab and default landing after checking the shipped reference (building mode vs. Overview's review mode), Tasks table enriched with hover actions and status badges (§4). Records/Rules/Configs unaffected.*
