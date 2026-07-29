@@ -6,6 +6,19 @@ four batches of real screenshots.
 
 **Design Lead:** Chris Calviño · **Conducted:** June 2026 · **Branch:** `claude/magical-tesla-vzktpc`
 
+> ### 📌 Post-audit update (July 2026) — current source of truth: [`H_change_model.md`](H_change_model.md)
+>
+> Sections A–G below are the **June 2026 audit + initial proposal**. Since then the design has evolved through nine iterations of PM feedback, in-Claude-Design builds, and cross-app validation (Mayo + TPRM in-file). The current model differs materially from what A–G describe:
+>
+> - **Direction 0's persistent left sidebar was dropped in v2** — Studio is now tab-first with the Studio app reached via `+ new tab`. No 220px sidebar, no 56px icon rail.
+> - **Task detail is an in-place panel swap inside its parent app tab** (v7), not a top-level tab.
+> - **Rules, Records, and Advanced items open as top-level tabs with emergent grouping** under their parent (v6 §2.9, v8) — nesting was tried, reverted, and replaced by visual tab-grouping.
+> - **Workflow page is Preview-dominant with Rules right-panel and JSON bottom-panel** (v8), not exclusive Preview/Rules/JSON sub-tabs.
+> - **Bottom bar** was removed (v5), then restored env-tinted (v7), then polished across many passes (v8).
+> - **App-level Summary now merges Working-in + Pipeline in one clickable context card**; Task Overview is the default landing tab and carries the self-contained deep-link brief (v9).
+>
+> Read [`H_change_model.md`](H_change_model.md) top-to-bottom (v2 → v9) for the current authoritative model. Sections A–G below stay as-is as **historical audit + exploration**, not current spec.
+
 ## Headline finding
 Studio is **bimodal**: a **top-quartile branching/review/AI engine** (entity-tree CR diff, inline
 comments, AI-drafted summaries, Merge & Deploy with in-progress handling, agentic context-aware AI)
