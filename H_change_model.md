@@ -80,6 +80,16 @@
 >
 > **What v10 does not change.** The 5-stage task lifecycle (Draft → Review → QA → Pre-Live → Live) stays. Promotion Tasks with their 3-stage lifecycle stay. Hotfix targeting a specific env stays. Env Review page for non-Dev envs stays. Everything downstream of the model — pipeline, promote/deploy CTAs, deployed-to sections — continues to work off `task.currentStage` as its source of truth. What changes is upstream: how env and task are *selected*, and how they compose in the bottom bar and App Summary. The rest of the system reads the new state; it doesn't need to be rewritten.
 
+> **v10.1 — Env switch drops task attachment (July 2026).** v10 said "switching env keeps the task pill in place." Building against that revealed the rule was optimizing for the wrong case — the *rare* flow (previewing the same task across envs) at the cost of the *common* flow (browsing another env for a moment while a task is loaded). Users kept flagging the same feel: "why is my task still there? I was just going to look at QA." The instinct is right: a task has its own env home (Dev for regular work, target env for hotfixes). Env switching is a viewing intent, not a task-carrying intent. v10.1 corrects the rule.
+>
+> **New default:** switching env from the bottom bar dropdown detaches the task. The env pill updates, the task pill collapses, and the bottom bar returns to env-only state for that env. Task selection is a separate action (from the same dropdown's tasks section, from a Working-in card, from a notification, from a task list) — it re-attaches the task pill without touching the env. Env and task remain decoupled at the logic level (neither drags the other on selection), but the *default* on env switch is "leave the task behind" rather than "carry it along."
+>
+> **What auto-follow still applies.** The other side of the same coin: successful promote/deploy actions initiated from the Task detail auto-snap the env pill to the target env (promote to Live → env pill becomes Live). That's the one case where env and task selection are linked, because the user's action was itself an env-changing action ("deploy this to Live"). Everything else stays decoupled.
+>
+> **What this deprecates.** The v10 phrase "Switching env just changes env; the task pill stays put unless the user clicks it separately" is superseded. Also deprecated: the "preview card in State 3" as the default landing when env-switching with an active task. State 3 (previewing task in non-Dev env) still exists but is reached explicitly — by activating a task while in a non-Dev env — not as a side effect of env switch. The App Summary in a non-Dev env with no active task shows the Env Review page cleanly; if the user then picks a task, the preview card appears.
+>
+> **Why this is the honest answer.** Analyzed against real workflows: 90% of env switches are "I want to look at [env]" (env-first intent), 10% are "I want to see my task in [env]" (task-carrying intent). Model 1 forced the 90% case to visually carry a task they weren't actively working on, which read as noise. Model 2 (v10.1) makes the 90% case clean and requires one extra click for the 10% case (re-select task in target env). That's the right tradeoff.
+
 ---
 
 ## Recap — Model 1 direction (unchanged)
@@ -731,4 +741,4 @@ Figma file: https://www.figma.com/design/Mg3plZn2b0tadSOZAP3ndX/Studio-%E2%80%94
 ---
 
 *Owner: Chris Calviño · chris@chriscalvino.com*
-*v10 — Env and Task decoupled as orthogonal dimensions. Bottom bar becomes two independent pills (env + task); env switch no longer carries task; Studio session defaults to env-only in Development. Downstream systems (pipeline, promote/deploy CTAs, Deployed-to) unchanged — they still read `task.currentStage`. What changes is upstream: how env and task are selected and composed.*
+*v10.1 — Env switch drops task attachment (correction to v10). Env pill and task pill unify into one visual pill in the bottom bar (env-tinted, task appended after "·" separator when active), but stay decoupled at the logic level. Env switch removes task pill; task selection reattaches without touching env. Promote/deploy from Task detail auto-snaps env to target env. Downstream systems unchanged.*
