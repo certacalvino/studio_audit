@@ -58,6 +58,28 @@
 > 6. **AI CTAs consolidated in the AI Panel — no inline "Generate with AI" buttons anywhere.** Inline `✦ Generate with AI` buttons on Task detail tabs (Change Log, Tests scenarios, etc.) violated the single-surface principle for AI. AI actions live exclusively in the AI Panel on the left; empty states can guide the user toward the panel via copy ("ask AI in the panel to generate scenarios") but never via an inline button.
 > 7. **Cross-app structural sync + Current-task pill lightened.** Every v9 structural change applies to both TPRM and Mayo — the two apps share the same shell, only content differs (TPRM Basic renders empty states, Mayo renders populated data). Separately: the `✓ Current task` indicator that sits next to Promote in the Task detail top bar was overweight — it read as a second CTA competing with Promote. It is now a light capsule pill (subtle background, 100% radius, small check + text, non-interactive), which reads clearly as a state indicator and lets Promote hold the CTA weight. The Tasks-list `Current`/`Switch` pills stay filled-dark because there they need inter-row contrast against the Switch rows — different context, different weight, same underlying pattern.
 
+> **v10 — Env and Task decoupled as orthogonal dimensions (July 2026).** Through v1–v9 the model coupled env and task together — the bottom bar always rendered `[env] > [task]` as a single compound context, every env switch dragged the active task with it, and "no active task" was an opt-in state buried in the env dropdown. v10 corrects the underlying model: **env and task are two independent dimensions**, not one compound context. Rationale, model, and behavior below.
+>
+> **The Git analogy that makes it click.** Env is the equivalent of a remote branch (main / staging / prod) — the deployed state at each target. Task is the equivalent of a local feature branch — your unit of work in flight. In Git you routinely browse `origin/prod` without your feature branch loaded, and you routinely edit your feature branch regardless of which remote you last inspected. Studio should support the same. Today it doesn't: switching env forces the task along; opening Studio auto-carries the last active task. Both defaults are wrong.
+>
+> **Three flows that fit cleanly once decoupled:**
+>
+> 1. **Browsing an env** (env-only, no task) — "I want to see what's in QA today." Env pill only; App Summary renders the Env Review page for QA; no Working-in card. This is the natural default when opening Studio for the first time in a session.
+> 2. **Working on a task** (task-first, env is secondary) — "I'm editing Task #438." Task pill visible; env pill still present but visually recessed since work happens in Development regardless. Task detail full-screen, env is contextual metadata not the primary lens.
+> 3. **Previewing a task in an env** (both pills active) — "How would my Task #438 look if I deployed it to QA?" Both pills active, App Summary shows Env Review page with a secondary Working-in card ("your task as previewed in QA"). This is the case v1–v9 optimized for exclusively; it remains supported, just no longer the only shape.
+>
+> **Bottom bar becomes two independent pills.** Left group: env pill (always shown, env-tinted, clicking opens the env picker only). Adjacent: task pill (only shown when a task is active, neutral color, clicking opens the task picker only). Closing the task ("×" on the task pill) returns to env-only state without touching env. Env picker no longer offers a "No active task" row — env selection has nothing to say about task state.
+>
+> **Cross-cutting behavior implications:**
+>
+> - **App Summary rendering** now branches on which pills are active, not just on env: env-only → Env Review page (or Dev empty hero); task active in Dev → Working-in card with task pipeline; task active in non-Dev → Env Review page with secondary Working-in preview card underneath. The Env Review + Working-in duality is what supports Flow 3 cleanly.
+> - **Task detail** still supports env lens (viewing a task from a specific env's perspective) — the mechanism from v8 stays. What changes is that the env lens is set by the env pill independently, not carried automatically from wherever the task was last opened.
+> - **Env switch behavior** no longer needs the Case 1/Case 2/Case 3 rules from earlier prompts — those existed because env switch was assumed to carry task context. It doesn't anymore. Switching env just changes env; the task pill stays put unless the user clicks it separately.
+> - **Promotion Tasks** are inherently tied to an env pair (Dev → QA, QA → Pre-Live, etc.), so their bottom-bar rendering is a special case: both env pills of the pair are represented in the task pill itself ("Task #501 · Promote Pre-Live to Live"), and the env pill shows whichever env the user is viewing from.
+> - **Studio session default on open** is env-only in Development, not env-plus-last-task. Discoverability shifts to the Working-in card on App Summary (which lists open tasks) and the task picker.
+>
+> **What v10 does not change.** The 5-stage task lifecycle (Draft → Review → QA → Pre-Live → Live) stays. Promotion Tasks with their 3-stage lifecycle stay. Hotfix targeting a specific env stays. Env Review page for non-Dev envs stays. Everything downstream of the model — pipeline, promote/deploy CTAs, deployed-to sections — continues to work off `task.currentStage` as its source of truth. What changes is upstream: how env and task are *selected*, and how they compose in the bottom bar and App Summary. The rest of the system reads the new state; it doesn't need to be rewritten.
+
 ---
 
 ## Recap — Model 1 direction (unchanged)
@@ -709,4 +731,4 @@ Figma file: https://www.figma.com/design/Mg3plZn2b0tadSOZAP3ndX/Studio-%E2%80%94
 ---
 
 *Owner: Chris Calviño · chris@chriscalvino.com*
-*v7 — Task detail reconsidered as an in-place panel swap within the app tab, not a top-level tab (§3) — the one exception to §2.9's tab-first model. Refined after build review: identity line + tab row pinned to a fixed position (breadcrumb replaces the standalone Back row), title demoted to tab content, Workspace restored as a fourth tab and default landing after checking the shipped reference (building mode vs. Overview's review mode), Tasks table enriched with hover actions and status badges (§4). Records/Rules/Configs unaffected.*
+*v10 — Env and Task decoupled as orthogonal dimensions. Bottom bar becomes two independent pills (env + task); env switch no longer carries task; Studio session defaults to env-only in Development. Downstream systems (pipeline, promote/deploy CTAs, Deployed-to) unchanged — they still read `task.currentStage`. What changes is upstream: how env and task are selected and composed.*
